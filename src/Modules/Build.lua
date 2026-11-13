@@ -480,10 +480,6 @@ function buildMode:Init(dbFileName, buildName, buildXML, convertBuild, importLin
 		self.viewMode = "ATLAS"
 	end)
 	self.controls.modeAtlas.locked = function() return self.viewMode == "ATLAS" end
-	self.controls.modeAtlas = new("ButtonControl"):ButtonControl({"LEFT",self.controls.modeCompare,"RIGHT"}, {4, 0, 72, 20}, "Atlas", function()
-		self.viewMode = "ATLAS"
-	end)
-	self.controls.modeAtlas.locked = function() return self.viewMode == "ATLAS" end
 	-- Skills
 	self.controls.mainSkillLabel = new("LabelControl"):LabelControl({"TOPLEFT",self.anchorSideBar,"TOPLEFT"}, {0, 80, 300, 16}, "^7Main Skill:")
 	self.controls.mainSocketGroup = new("DropDownControl"):DropDownControl({"TOPLEFT",self.controls.mainSkillLabel,"BOTTOMLEFT"}, {0, 2, 300, 18}, nil, function(index, value)
