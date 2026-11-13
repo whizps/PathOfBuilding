@@ -47,6 +47,6 @@ rusty-pob is native and fast, and is what Linux PoB users actually run. Renderin
 - Revisit: if rusty-pob lags behind a SimpleGraphic API that PoB starts using, bump the pinned tag.
 
 ## Action Items
-1. [ ] `dev/run-linux.sh` plus `docs/atlas/dev-linux.md`.
-2. [ ] Verify a window opens under WSLg and the Atlas tab renders.
+1. [x] `dev/run-linux.sh` plus `docs/atlas/dev-linux.md`.
+2. [x] Verify a window opens under WSLg and the Atlas tab renders.
 3. [ ] Final manual pass on Windows.

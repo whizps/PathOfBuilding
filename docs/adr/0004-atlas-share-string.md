@@ -39,4 +39,4 @@ Interop with the official site matters more than carrying the title. The version
 
 ## Action Items
 1. [ ] Capture a real atlas link from pathofexile.com and decode it by hand to confirm the layout.
-2. [ ] `AtlasSpec:EncodeURL` / `DecodeURL`, plus a round-trip spec.
+2. [x] `AtlasSpec:EncodeURL` / `DecodeURL`, plus a round-trip spec.

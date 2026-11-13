@@ -33,7 +33,7 @@ Users plan one or more atlas trees ("Breach farming", "Essence + Harvest") along
 | Side effect | Atlas trees ride along in shared build codes |
 
 **Pros:** Zero new storage plumbing. Save/undo/modified indicators work as everywhere else.
-**Cons:** Build codes get slightly longer. The owner accepted this.
+**Cons:** Build codes get slightly longer.
 
 ## Trade-off Analysis
 
@@ -46,6 +46,6 @@ Embedding in the build file is the conventional PoB approach and costs only a fe
 - Revisit: if build-code length becomes a complaint, add an option to strip `<Atlas>` from exported codes.
 
 ## Action Items
-1. [ ] `AtlasTab:Load(xml)` / `AtlasTab:Save(xml)`, plus registration in `Build.lua` savers.
-2. [ ] Round-trip spec: save → load gives identical specs.
-3. [ ] Spec: legacy build with no `<Atlas>` has unchanged calc output.
+1. [x] `AtlasTab:Load(xml)` / `AtlasTab:Save(xml)`, plus registration in `Build.lua` savers.
+2. [x] Round-trip spec: save → load gives identical specs.
+3. [x] Spec: legacy build with no `<Atlas>` has unchanged calc output.

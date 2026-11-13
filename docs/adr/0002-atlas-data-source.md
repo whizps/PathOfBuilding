@@ -65,6 +65,6 @@ Committing the generated data trades repo size for reliability and parity with u
 - Revisit: if GGG stops updating the repo, add a second source behind the same converter.
 
 ## Action Items
-1. [ ] Write the converter (both schemas, idempotent, single-tag and all-tags modes).
-2. [ ] Import every non-RC tag. Resolve duplicate display names (`3.22.0-ruthless` vs `-ruthless-atlas`).
-3. [ ] Write `docs/atlas/importing-atlas-versions.md`.
+1. [x] Write the converter (both schemas, idempotent, single-tag and all-tags modes).
+2. [x] Import every non-RC tag. Resolve duplicate display names (`3.22.0-ruthless` vs `-ruthless-atlas`).
+3. [x] Write `docs/atlas/importing-atlas-versions.md`.

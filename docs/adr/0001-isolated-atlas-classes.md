@@ -63,6 +63,6 @@ The duplicated code is geometry and drawing. It is stable and changes rarely. Th
 - Revisit: if upstream ever extracts a generic "tree renderer", migrate onto it.
 
 ## Action Items
-1. [ ] Implement `AtlasTree`, `AtlasSpec`, `AtlasTreeView`, `AtlasTab`.
-2. [ ] Hook-ups in `Build.lua` only: button, view mode, saver.
-3. [ ] Non-interference spec: calc outputs identical with and without an `<Atlas>` section.
+1. [x] Implement `AtlasTree`, `AtlasSpec`, `AtlasTreeView`, `AtlasTab`.
+2. [x] Hook-ups in `Build.lua` (button, view mode, saver) and `Main.lua` (version list, tree cache) only.
+3. [x] Non-interference spec: calc outputs identical with and without an `<Atlas>` section.
