@@ -183,6 +183,7 @@ function AtlasTreeClass:BuildGroups(data)
 			y = group.y,
 			maxOrbit = maxOrbit,
 			isProxy = group.isProxy,
+			background = group.background,
 		}
 	end
 end
