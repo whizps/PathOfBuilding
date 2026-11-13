@@ -1,6 +1,6 @@
 # Atlas tab
 
-The Atlas tab lets you plan atlas passive trees inside Path of Building. Atlas trees are saved with the build they belong to and can be shared as a link. The tab is fully separate from build calculations: allocating atlas nodes never changes a calculated value and never triggers a recalculation.
+The Atlas tab lets you plan atlas passive trees inside Path of Building. Like the in-game atlas, they belong to you rather than to a single build: every build shows the same atlas trees, changes are saved automatically, and they can be shared as a link. The tab is fully separate from build calculations: allocating atlas nodes never changes a calculated value and never triggers a recalculation.
 
 This page explains how the feature works end to end: where the data comes from, how it is loaded and drawn, and how atlas trees are saved and shared. For the reasoning behind the main choices, see the ADRs in `docs/adr/`.
 
@@ -17,6 +17,8 @@ src/Data/AtlasTreeVersions.lua
 AtlasTree       one atlas tree version: nodes, positions, links, sprites
         │
 AtlasSpec       one named atlas plan: allocated nodes, variants, undo, save/load, links, stat summary
+        │
+AtlasLibrary    all atlas trees, stored in AtlasTrees.xml in the user folder
         │
 AtlasTab        the tab: atlas tree list, version picker, buttons, popups
   ├─ AtlasTreeView    draws the tree, handles hover/click/zoom/pan
@@ -102,7 +104,7 @@ It handles the following:
   Ctrl+Z / Ctrl+Y undo and redo, Ctrl+F jumps to search, and Ctrl+M opens the atlas tree manager.
 - **`AtlasTreeView`** draws the background, group backgrounds, connectors, nodes and tooltips:
   - Hover shows the path to allocate, or the nodes that would be removed in red.
-  - Hovering a Gateway rings its partner Gateway.
+  - Hovering a node rings every other node with the same name. For example, hovering a Gateway shows its partner, and hovering a mechanic's cluster icon (such as Breach) shows every Breach cluster on the tree.
   - Clicking a node calls back into the tab. Clicking a variant notable opens the effect dropdown.
 - **`AtlasStatPanel`** draws the point counter and the collapsible stat categories. Hovering a stat rings the nodes that give it.
 
@@ -114,23 +116,24 @@ Only two existing files are changed, and only with additions:
 - **`Modules/Build.lua`:**
   - adds the **Atlas** button and the `ATLAS` view mode
   - creates `atlasTab`
-  - registers it as the saver for the `<Atlas>` section
-  - includes its unsaved-changes flag
+  - registers `<Atlas>` as a load-only legacy section, so older build files can be imported
   - saves `viewMode` as `TREE` when the Atlas tab is open, so the build opens normally in other PoB versions
 
 ## Saving
 
-Atlas trees are saved in an `<Atlas>` section of the build file. Because PoB build codes are the compressed build file, they are included in build codes too.
+Atlas trees are stored in `AtlasTrees.xml` in PoB's user folder (`main.userPath`, normally `Documents\Path of Building`, next to `Settings.xml` and the Builds folder). That folder survives program updates and reinstalls. `AtlasLibrary` loads the file the first time a build is opened, and the Atlas tab writes it after every change. There's no save button and build files are never touched (ADR-0006).
 
 ```xml
-<Atlas activeSpec="1">
+<AtlasTrees activeSpec="1">
   <Spec title="Breach farming" treeVersion="3_30" nodes="57123,63753">
     <Variant nodeId="45404" effect="55878"/>
   </Spec>
-</Atlas>
+</AtlasTrees>
 ```
 
-Builds without this section load exactly as before. An unrecognised `treeVersion` falls back to the newest version, and node ids that don't exist are skipped.
+An unrecognised `treeVersion` falls back to the newest version, and node ids that don't exist are skipped.
+
+Earlier versions of the tab saved atlas trees in an `<Atlas>` section of the build file. When such a build is opened, its atlas trees are imported into the library once. Duplicates and empty atlas trees are skipped, and the build itself is not modified.
 
 ## Sharing
 
@@ -157,8 +160,8 @@ The atlas specs (`spec/System/TestAtlas*_spec.lua`) cover:
 - loading every version
 - pathing, removal and Gateways
 - variants
-- save/load and link round trips
+- the library file, importing from older build files, and link round trips
 - the stat summary
-- drawing and tooltips
+- drawing, tooltips and same-name highlighting
 
 `TestAtlasNonInterference_spec.lua` loads the bundled test builds with and without atlas data. It allocates atlas nodes and checks that every calculated value is unchanged and no recalculation was triggered.

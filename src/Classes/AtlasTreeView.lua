@@ -62,14 +62,19 @@ function AtlasTreeViewClass:ScreenToTree(x, y)
 end
 
 function AtlasTreeViewClass:GetNodeAt(spec, treeX, treeY)
+	local mastery
 	for _, node in pairs(spec.tree.nodes) do
-		if node.x and node.type ~= "Mastery" and node.id ~= 0 then
+		if node.x and node.id ~= 0 then
 			local dx, dy = treeX - node.x, treeY - node.y
 			if dx * dx + dy * dy <= node.rsq then
-				return node
+				if node.type ~= "Mastery" then
+					return node
+				end
+				mastery = mastery or node
 			end
 		end
 	end
+	return mastery
 end
 
 function AtlasTreeViewClass:Zoom(level, viewPort)
@@ -210,8 +215,13 @@ function AtlasTreeViewClass:Draw(spec, viewPort, inputEvents, onNodeClick, highl
 					self.hoverPath[node] = true
 				end
 			end
-			for _, node in ipairs(tree:GetWormholePartners(hoverNode)) do
-				self.hoverPartners[node] = true
+			local sameName = tree:GetNodesWithSameName(hoverNode)
+			if #sameName > 1 then
+				for _, node in ipairs(sameName) do
+					if node ~= hoverNode then
+						self.hoverPartners[node] = true
+					end
+				end
 			end
 		end
 	end
@@ -355,6 +365,12 @@ function AtlasTreeViewClass:AddNodeTooltip(tooltip, spec, node, hoverPath)
 	local nameColor = node.type == "Keystone" and colorCodes.UNIQUE or (node.type == "Notable" and colorCodes.RARE or "^7")
 	tooltip:AddLine(24, nameColor .. node.dn)
 	tooltip:AddSeparator(10)
+	local sameCount = #spec.tree:GetNodesWithSameName(node)
+	if node.type == "Mastery" then
+		tooltip:AddLine(16, "^7" .. sameCount .. " " .. node.dn .. " cluster" .. (sameCount == 1 and "" or "s") .. " on the atlas tree (highlighted)")
+	elseif sameCount > 1 then
+		tooltip:AddLine(14, "^8" .. (sameCount - 1) .. " other node" .. (sameCount == 2 and "" or "s") .. " with this name highlighted")
+	end
 	for _, line in ipairs(node.sd) do
 		tooltip:AddLine(16, colorCodes.MAGIC .. line)
 	end

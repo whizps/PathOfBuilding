@@ -14,8 +14,12 @@ function AtlasTabClass:AtlasTab(build)
 	self.build = build
 	self.viewer = new("AtlasTreeView"):AtlasTreeView()
 	self.statPanel = new("AtlasStatPanel"):AtlasStatPanel(self)
-	self.specList = { new("AtlasSpec"):AtlasSpec(latestAtlasTreeVersion) }
-	self:SetActiveSpec(1)
+	if not main.atlasLibrary then
+		main.atlasLibrary = new("AtlasLibrary"):AtlasLibrary(main.userPath and (main.userPath .. "AtlasTrees.xml"))
+	end
+	self.library = main.atlasLibrary
+	self.specList = self.library.specList
+	self:SetActiveSpec(self.library.activeSpec)
 
 	self.versionKeys = { }
 	local versionLabels = { }
@@ -86,6 +90,7 @@ end
 function AtlasTabClass:SetActiveSpec(index)
 	self.activeSpec = m_max(1, m_min(index, #self.specList))
 	self.spec = self.specList[self.activeSpec]
+	self.library.activeSpec = self.activeSpec
 	self.notice = nil
 end
 
@@ -204,47 +209,9 @@ function AtlasTabClass:OpenExportPopup()
 	main:OpenPopup(580, 100, "Export Atlas Tree", controls, "done", "edit")
 end
 
-function AtlasTabClass:IsModified()
-	if self.modFlag then
-		return true
-	end
-	for _, spec in ipairs(self.specList) do
-		if spec.modFlag then
-			return true
-		end
-	end
-	return false
-end
-
-function AtlasTabClass:ResetModFlags()
-	self.modFlag = false
-	for _, spec in ipairs(self.specList) do
-		spec.modFlag = false
-	end
-end
-
 function AtlasTabClass:Load(xml)
-	self.specList = { }
-	for _, node in ipairs(xml) do
-		if type(node) == "table" and node.elem == "Spec" then
-			local spec = new("AtlasSpec"):AtlasSpec(latestAtlasTreeVersion)
-			spec:Load(node)
-			t_insert(self.specList, spec)
-		end
-	end
-	if not self.specList[1] then
-		self.specList[1] = new("AtlasSpec"):AtlasSpec(latestAtlasTreeVersion)
-	end
-	self:SetActiveSpec(tonumber(xml.attrib and xml.attrib.activeSpec) or 1)
-	self:ResetModFlags()
-end
-
-function AtlasTabClass:Save(xml)
-	xml.attrib = { activeSpec = tostring(self.activeSpec) }
-	for _, spec in ipairs(self.specList) do
-		local child = { elem = "Spec" }
-		spec:Save(child)
-		t_insert(xml, child)
+	if self.library:ImportSpecs(xml) > 0 then
+		self:SetActiveSpec(#self.specList)
 	end
 end
 
@@ -300,4 +267,11 @@ function AtlasTabClass:Draw(viewPort, inputEvents)
 	DrawImage(nil, viewPort.x, viewPort.y + viewPort.height - 34, viewPort.width, 4)
 
 	self:DrawControls(viewPort)
+
+	if self.modFlag then
+		self.library.modFlag = true
+		self.modFlag = false
+	end
+	self.library.activeSpec = self.activeSpec
+	self.library:SaveIfModified()
 end

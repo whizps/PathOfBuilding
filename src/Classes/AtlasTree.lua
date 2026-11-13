@@ -273,9 +273,13 @@ function AtlasTreeClass:BuildNodes(data)
 	end
 	self.rootNode = self.nodes[0]
 	self.startNodes = { }
+	self.nodesByName = { }
 	for _, node in pairs(self.nodes) do
 		if node.type == "Root" then
 			t_insert(self.startNodes, node)
+		elseif node.dn ~= "" and node.x then
+			self.nodesByName[node.dn] = self.nodesByName[node.dn] or { }
+			t_insert(self.nodesByName[node.dn], node)
 		end
 		node.linkedSet = nil
 	end
@@ -308,6 +312,13 @@ function AtlasTreeClass:BuildConnectors()
 			end
 		end
 	end
+end
+
+function AtlasTreeClass:GetNodesWithSameName(node)
+	if node.type == "Root" or node.dn == "" then
+		return { }
+	end
+	return self.nodesByName[node.dn] or { }
 end
 
 function AtlasTreeClass:GetWormholePartners(node)

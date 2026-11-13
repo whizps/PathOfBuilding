@@ -1,6 +1,6 @@
 # ADR-0003: Atlas trees are saved as an `<Atlas>` section of the build file
 
-**Status:** Accepted
+**Status:** Superseded by ADR-0006
 **Date:** 2026-11-13
 **Deciders:** Kristoffer Forsberg
 

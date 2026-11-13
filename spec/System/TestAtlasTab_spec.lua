@@ -1,6 +1,36 @@
 describe("AtlasTab", function()
+	local libraryPath
+
+	local function readFile(path)
+		local file = io.open(path, "r")
+		if not file then
+			return nil
+		end
+		local text = file:read("*a")
+		file:close()
+		return text
+	end
+
+	local function atlasSection(title, targetId, variant)
+		local spec = new("AtlasSpec"):AtlasSpec("3_30", title)
+		spec:AllocNode(spec.tree.nodes[targetId])
+		local text = '<Spec title="' .. title .. '" treeVersion="3_30" nodes="' .. table.concat(spec:GetAllocatedIds(), ",") .. '">'
+		if variant then
+			text = text .. '<Variant nodeId="' .. targetId .. '" effect="' .. variant .. '"/>'
+		end
+		return text .. "</Spec>"
+	end
+
 	before_each(function()
+		libraryPath = os.tmpname()
+		os.remove(libraryPath)
+		main.atlasLibrary = new("AtlasLibrary"):AtlasLibrary(libraryPath)
+		wipeTable(main.popups)
 		newBuild()
+	end)
+
+	after_each(function()
+		os.remove(libraryPath)
 	end)
 
 	it("hooks into the build without triggering calculations", function()
@@ -12,10 +42,9 @@ describe("AtlasTab", function()
 		build.buildFlag = false
 		tab:HandleNodeClick(tab.spec.tree.nodes[63753])
 		assert.are.equal(12, tab.spec:CountAllocNodes())
-		assert.is_true(tab:IsModified())
 		runCallback("OnFrame")
-		assert.is_true(build.unsaved)
 		assert.is_false(build.buildFlag)
+		assert.is_truthy((readFile(libraryPath) or ""):find("63753", 1, true))
 		tab:HandleNodeClick(tab.spec.tree.nodes[57123])
 		assert.are.equal(10, tab.spec:CountAllocNodes())
 		tab:HandleNodeClick(tab.spec.tree.nodes[45404])
@@ -35,8 +64,8 @@ describe("AtlasTab", function()
 		tab:Draw(viewPort, { })
 		tab.spec:AllocNode(tab.spec.tree.nodes[45404])
 		tab:Draw(viewPort, { })
-		for _, id in ipairs({ 63753, 45404, 17000, 57123 }) do
-			local node = tab.spec.tree.nodes[id]
+		local mastery = tab.spec.tree.masteries[1]
+		for _, node in ipairs({ tab.spec.tree.nodes[63753], tab.spec.tree.nodes[45404], tab.spec.tree.nodes[17000], tab.spec.tree.nodes[57123], mastery }) do
 			assert.is_true(tab.viewer.tooltip:CheckForUpdate(node, tab.spec.revision))
 			tab.viewer:AddNodeTooltip(tab.viewer.tooltip, tab.spec, node, { })
 			tab.viewer.tooltip:Draw(100, 100, 20, 20, viewPort)
@@ -45,33 +74,63 @@ describe("AtlasTab", function()
 		local view = tab.viewer
 		local node = tab.spec.tree.nodes[57123]
 		assert.are.equal(node, view:GetNodeAt(tab.spec, node.x, node.y))
+		assert.are.equal(mastery, view:GetNodeAt(tab.spec, mastery.x, mastery.y))
 		local x, y = view:ScreenToTree(view:TreeToScreen(100, -200))
 		assert.is_true(math.abs(x - 100) < 0.01 and math.abs(y + 200) < 0.01)
 	end)
 
-	it("saves and loads atlas trees with the build", function()
+	it("highlights nodes and clusters that share a name", function()
+		local tree = build.atlasTab.spec.tree
+		assert.are.equal(2, #tree:GetNodesWithSameName(tree.nodes[17000]))
+		local breach = 0
+		for _, mastery in ipairs(tree.masteries) do
+			if mastery.dn == "Breach" then
+				breach = breach + 1
+			end
+		end
+		local breachMastery
+		for _, mastery in ipairs(tree.masteries) do
+			if mastery.dn == "Breach" then
+				breachMastery = mastery
+			end
+		end
+		assert.are.equal(breach, #tree:GetNodesWithSameName(breachMastery))
+		assert.is_true(#tree:GetNodesWithSameName(tree.nodes[55117]) > 10)
+		assert.are.equal(0, #tree:GetNodesWithSameName(tree.nodes[29045]))
+	end)
+
+	it("persists atlas trees in the library file", function()
 		local tab = build.atlasTab
 		tab.spec:AllocNode(tab.spec.tree.nodes[63753])
+		tab.spec:AddUndoState()
 		local second = tab:NewSpec("Breach farming")
 		second:AllocNode(second.tree.nodes[45404])
 		second:SetVariant(45404, 55878)
+		second:AddUndoState()
+		tab:Draw({ x = 0, y = 0, width = 1600, height = 900 }, { })
+		local reloaded = new("AtlasLibrary"):AtlasLibrary(libraryPath)
+		assert.are.equal(2, #reloaded.specList)
+		assert.are.equal("Breach farming", reloaded.specList[2].title)
+		assert.are.equal(12, reloaded.specList[1]:CountAllocNodes())
+		assert.are.equal(55878, reloaded.specList[2].variantSelections[45404])
+		assert.are.equal(2, reloaded.activeSpec)
 		build.viewMode = "ATLAS"
 		local xml = build:SaveDB("code")
 		assert.is_truthy(xml:find('viewMode="TREE"', 1, true))
-		loadBuildFromXML(xml)
-		tab = build.atlasTab
-		assert.are.equal(2, #tab.specList)
-		assert.are.equal("Breach farming", tab.specList[2].title)
-		assert.are.equal(12, tab.specList[1]:CountAllocNodes())
-		assert.are.equal(55878, tab.specList[2].variantSelections[45404])
-		assert.are.equal(2, tab.activeSpec)
+		assert.is_nil(xml:find("<Atlas", 1, true))
 	end)
 
-	it("tolerates unknown atlas versions", function()
-		local xml = build:SaveDB("code"):gsub("<Atlas[^>]*>.-</Atlas>", '<Atlas activeSpec="1"><Spec title="X" treeVersion="9_99" nodes="57123"/></Atlas>')
-		wipeTable(main.popups)
+	it("imports atlas trees from older build files once", function()
+		local section = '<Atlas activeSpec="1">' .. atlasSection("Old plan", 63753) .. atlasSection("Variant plan", 45404, 55878) .. '<Spec title="Lost" treeVersion="9_99" nodes="57123"/></Atlas>'
+		local xml = build:SaveDB("code"):gsub("</PathOfBuilding>", section .. "</PathOfBuilding>")
 		loadBuildFromXML(xml)
-		assert.are.equal(latestAtlasTreeVersion, build.atlasTab.spec.treeVersion)
+		local list = build.atlasTab.specList
+		assert.are.equal(2, #list)
+		assert.are.equal("Old plan", list[1].title)
+		assert.are.equal(12, list[1]:CountAllocNodes())
+		assert.are.equal(55878, list[2].variantSelections[45404])
+		loadBuildFromXML(xml)
+		assert.are.equal(2, #build.atlasTab.specList)
 		for _, popup in ipairs(main.popups) do
 			assert.are_not.equal("Unknown Passive Tree Version", popup.title)
 		end

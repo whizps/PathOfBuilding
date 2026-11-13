@@ -12,6 +12,7 @@ inspect.lua
 Builds/
 *.cfg
 Settings.xml
+AtlasTrees.xml
 
 # Testing
 luajit/
