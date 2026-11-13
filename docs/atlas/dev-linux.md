@@ -18,7 +18,7 @@ dev/run-linux.sh
 ```
 
 The first run does two things:
-- clones Rusty Path of Building (pinned tag `v0.3.4`) into `dev/.rpob/src`, and installs the pinned Rust toolchain (1.90.0) next to your default one if it is missing
+- clones Rusty Path of Building (pinned tag `v0.3.4`) into `dev/.rpob/src`, and installs the pinned Rust toolchain (1.91.0) next to your default one if it is missing
 - builds it with `cargo build --release --features vendored-lua`, which takes a few minutes
 
 Later runs start immediately. `dev/.rpob/` is git-ignored.

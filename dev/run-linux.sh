@@ -2,7 +2,7 @@
 set -euo pipefail
 root="$(git -C "$(dirname "$0")" rev-parse --show-toplevel)"
 tag="${RPOB_TAG:-v0.3.4}"
-toolchain="${RPOB_TOOLCHAIN:-1.90.0}"
+toolchain="${RPOB_TOOLCHAIN:-1.91.0}"
 src="$root/dev/.rpob/src"
 bin="$src/target/release/rusty-path-of-building"
 if [ ! -d "$src/.git" ]; then
@@ -22,4 +22,5 @@ if [ ! -x "$bin" ]; then
 	fi
 fi
 cd "$root"
+export LUA_PATH="$root/runtime/lua/?.lua;$root/runtime/lua/?/init.lua;${LUA_PATH:-;}"
 exec "$bin" poe1 "$@"
