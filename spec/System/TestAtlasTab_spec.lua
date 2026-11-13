@@ -162,6 +162,7 @@ describe("AtlasTab", function()
 				if line.text == "4% increased Maps found in your Maps" then
 					found = found + 1
 					assert.are.equal(2, #line.nodes)
+					assert.are.equal("Misc", category.category)
 				end
 			end
 		end

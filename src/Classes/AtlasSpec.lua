@@ -365,43 +365,14 @@ function AtlasSpecClass:GetMasteryCategories()
 	return names
 end
 
-function AtlasSpecClass:GetNearestMastery(node)
-	if node.nearestMastery ~= nil then
-		return node.nearestMastery
-	end
-	local best, bestDist = false, 600 * 600
-	for _, mastery in ipairs(self.tree.masteries) do
-		if node.x and mastery.x then
-			local dx, dy = node.x - mastery.x, node.y - mastery.y
-			local dist = dx * dx + dy * dy
-			if dist < bestDist then
-				best, bestDist = mastery.dn, dist
-			end
-		end
-	end
-	node.nearestMastery = best
-	return best
-end
-
-function AtlasSpecClass:CategoriseLine(text, nodes)
+function AtlasSpecClass:CategoriseLine(text)
 	local lower = " " .. text:lower() .. " "
 	for _, category in ipairs(self:GetMasteryCategories()) do
 		if lower:find("[^%w]" .. category.pattern .. "s?[^%w]") then
 			return category.name
 		end
 	end
-	local counts = { }
-	local bestName, bestCount = nil, 0
-	for _, node in ipairs(nodes) do
-		local name = self:GetNearestMastery(node)
-		if name then
-			counts[name] = (counts[name] or 0) + 1
-			if counts[name] > bestCount or (counts[name] == bestCount and name < bestName) then
-				bestName, bestCount = name, counts[name]
-			end
-		end
-	end
-	return bestName or "Misc"
+	return "Misc"
 end
 
 function AtlasSpecClass:GetStatSummary()
@@ -444,7 +415,7 @@ function AtlasSpecClass:GetStatSummary()
 			index = index + 1
 			return formatNumber(entry.numbers[index] or 0)
 		end)
-		local name = self:CategoriseLine(text, entry.nodes)
+		local name = self:CategoriseLine(text)
 		local category = categoryMap[name]
 		if not category then
 			category = { category = name, lines = { } }

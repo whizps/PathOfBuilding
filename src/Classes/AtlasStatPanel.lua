@@ -9,6 +9,24 @@ local lineGap = 4
 
 local AtlasStatPanelClass = newClass("AtlasStatPanel")
 
+local function wrapText(text, height, width)
+	local lines = { }
+	local current
+	for word in text:gmatch("%S+") do
+		local candidate = current and (current .. " " .. word) or word
+		if current and DrawStringWidth(height, "VAR", candidate) > width then
+			t_insert(lines, current)
+			current = word
+		else
+			current = candidate
+		end
+	end
+	if current then
+		t_insert(lines, current)
+	end
+	return lines
+end
+
 function AtlasStatPanelClass:AtlasStatPanel(tab)
 	self.tab = tab
 	self.collapsed = { }
@@ -42,10 +60,7 @@ function AtlasStatPanelClass:BuildRows(width)
 		y = y + headerHeight + 2
 		if not self:IsCollapsed(category.category) then
 			for _, line in ipairs(category.lines) do
-				local wrapped = { }
-				for _, part in ipairs(main:WrapString(line.text, lineHeight, width - 12)) do
-					t_insert(wrapped, part)
-				end
+				local wrapped = wrapText(line.text, lineHeight, width - 12)
 				local height = #wrapped * lineHeight
 				t_insert(rows, { kind = "line", lines = wrapped, nodes = line.nodes, y = y, height = height })
 				y = y + height + lineGap

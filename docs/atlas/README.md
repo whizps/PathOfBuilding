@@ -92,7 +92,7 @@ It handles the following:
 - **Changing version:** keeps the node ids that exist in the new version and drops the rest (the tab shows how many were dropped).
 - **Stat summary:**
   - Identical stats are summed. Their numbers are replaced by placeholders, matched, added up and put back.
-  - Each stat is placed in a category: the first mastery name found in the text, otherwise the most common nearby mastery among the nodes that give it, otherwise "Misc".
+  - Each stat is placed in a category: the first mechanic (mastery) name found in its text, such as Breach, Incursion or Ritual. Stats that name no mechanic, such as "increased Maps found", go under "Misc", which is listed last.
   - Variant notables count only their chosen effect.
 
 ## The tab
