@@ -29,6 +29,26 @@ describe("AtlasTab", function()
 		assert.is_true(tab.spec:CountAllocNodes() > 0)
 	end)
 
+	it("draws the tab and builds node tooltips", function()
+		local tab = build.atlasTab
+		local viewPort = { x = 0, y = 0, width = 1600, height = 900 }
+		tab:Draw(viewPort, { })
+		tab.spec:AllocNode(tab.spec.tree.nodes[45404])
+		tab:Draw(viewPort, { })
+		for _, id in ipairs({ 63753, 45404, 17000, 57123 }) do
+			local node = tab.spec.tree.nodes[id]
+			assert.is_true(tab.viewer.tooltip:CheckForUpdate(node, tab.spec.revision))
+			tab.viewer:AddNodeTooltip(tab.viewer.tooltip, tab.spec, node, { })
+			tab.viewer.tooltip:Draw(100, 100, 20, 20, viewPort)
+		end
+		tab.statPanel:Draw({ x = 1280, y = 0, width = 320, height = 868 }, { })
+		local view = tab.viewer
+		local node = tab.spec.tree.nodes[57123]
+		assert.are.equal(node, view:GetNodeAt(tab.spec, node.x, node.y))
+		local x, y = view:ScreenToTree(view:TreeToScreen(100, -200))
+		assert.is_true(math.abs(x - 100) < 0.01 and math.abs(y + 200) < 0.01)
+	end)
+
 	it("saves and loads atlas trees with the build", function()
 		local tab = build.atlasTab
 		tab.spec:AllocNode(tab.spec.tree.nodes[63753])

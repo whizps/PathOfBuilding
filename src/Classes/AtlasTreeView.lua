@@ -36,7 +36,7 @@ local AtlasTreeViewClass = newClass("AtlasTreeView")
 function AtlasTreeViewClass:AtlasTreeView()
 	self.ring = NewImageHandle()
 	self.ring:Load("Assets/small_ring.png", "CLAMP")
-	self.tooltip = new("Tooltip")
+	self.tooltip = new("Tooltip"):Tooltip()
 	self.zoomLevel = 0
 	self.zoom = 1
 	self.zoomX = 0
