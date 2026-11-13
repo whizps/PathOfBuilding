@@ -2,15 +2,16 @@
 
 The Atlas tab lets you plan atlas passive trees inside Path of Building. Like the in-game atlas, they belong to you rather than to a single build: every build shows the same atlas trees, changes are saved automatically, and they can be shared as a link. The tab is fully separate from build calculations: allocating atlas nodes never changes a calculated value and never triggers a recalculation.
 
-This page explains how the feature works end to end: where the data comes from, how it is loaded and drawn, and how atlas trees are saved and shared. For the reasoning behind the main choices, see the ADRs in `docs/adr/`.
+This page explains how the feature works end to end: where the data comes from, how it is loaded and drawn, and how atlas trees are saved and shared.
 
 ## Overview
 
 ```
-grindinggear/atlastree-export   (GGG's GitHub repo, one tag per league)
+https://github.com/grindinggear/atlastree-export   (one tag per league)
         │  python3 src/Export/Atlas/import_atlas_tree.py
         ▼
-src/TreeData/Atlas/<key>/tree.lua + sprite sheets
+src/TreeData/Atlas/<key>/tree.lua + images.lua
+src/TreeData/Atlas/Images/          (sprite sheets, stored once)
 src/Data/AtlasTreeVersions.lua
         │  main:LoadAtlasTree(key)            (Modules/Main.lua, cached)
         ▼
@@ -45,6 +46,7 @@ The script:
 2. Turns each tag into a **version key**: `3.30.0` becomes `3_30`, `3.29.1` becomes `3_29_1`, and `3.25.0-ruthless` becomes `3_25_ruthless`. Keys are stored in users' build files, so they must never change.
 3. Downloads `data.json` and writes it as a Lua table to `src/TreeData/Atlas/<key>/tree.lua`.
 4. Downloads only the sprite sheets PoB draws: zoom `0.3835`, or the largest one available. If a file is missing from the tag it falls back to GGG's CDN.
+   Many leagues share identical images, so each image is stored once in `src/TreeData/Atlas/Images/` under its name plus a short content hash. A per-version `images.lua` maps the names used in `tree.lua` to those files. A full import removes images no version uses anymore.
 5. Rewrites `src/Data/AtlasTreeVersions.lua`, the ordered version list shown in the version dropdown. The newest non-Ruthless version is the default.
 
 Files are written only when they change, so re-running the script is safe. Step-by-step instructions and troubleshooting are in [importing-atlas-versions.md](importing-atlas-versions.md).
@@ -121,7 +123,7 @@ Only two existing files are changed, and only with additions:
 
 ## Saving
 
-Atlas trees are stored in `AtlasTrees.xml` in PoB's user folder (`main.userPath`, normally `Documents\Path of Building`, next to `Settings.xml` and the Builds folder). That folder survives program updates and reinstalls. `AtlasLibrary` loads the file the first time a build is opened, and the Atlas tab writes it after every change. There's no save button and build files are never touched (ADR-0006).
+Atlas trees are stored in `AtlasTrees.xml` in PoB's user folder (`main.userPath`, normally `Documents\Path of Building`, next to `Settings.xml` and the Builds folder). That folder survives program updates and reinstalls. `AtlasLibrary` loads the file the first time a build is opened, and the Atlas tab writes it after every change. There's no save button and build files are never touched.
 
 ```xml
 <AtlasTrees activeSpec="1">
@@ -150,9 +152,8 @@ All of it is base64url-encoded. **Import** accepts the full link or just the pay
 ## Testing
 
 ```bash
-dev/test.sh                               # whole suite in PoB's official test container
-dev/test.sh TestAtlasTab_spec.lua         # one spec
-dev/run-linux.sh                          # run the program on Linux / WSL (see dev-linux.md)
+docker compose run busted-tests                                   # whole suite, as in CONTRIBUTING.md
+docker compose run busted-tests busted --lua=luajit ../spec/System/TestAtlasTab_spec.lua   # one spec
 ```
 
 The atlas specs (`spec/System/TestAtlas*_spec.lua`) cover:

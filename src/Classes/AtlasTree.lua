@@ -95,11 +95,29 @@ function AtlasTreeClass:AtlasTree(key)
 	self.centerY = (self.min_y + self.max_y) / 2
 	self.totalPoints = data.points and data.points.totalPoints or 0
 
+	local imageMapFile = io.open("TreeData/Atlas/" .. key .. "/images.lua", "r")
+	if imageMapFile then
+		self.imageMap = assert(loadstring(imageMapFile:read("*a")))()
+		imageMapFile:close()
+	else
+		self.imageMap = { }
+	end
+
 	self:LoadSprites(data)
 	self:BuildGroups(data)
 	self:BuildNodes(data)
 	self:BuildConnectors()
 	return self
+end
+
+function AtlasTreeClass:ResolveImage(basename)
+	local mapped = self.imageMap[basename]
+	if mapped and fileExists("TreeData/Atlas/Images/" .. mapped) then
+		return "Atlas/Images/" .. mapped
+	end
+	if fileExists("TreeData/" .. self.treeVersion .. "/" .. basename) then
+		return basename
+	end
 end
 
 function AtlasTreeClass:LoadSheet(sheetData, cache)
@@ -110,10 +128,11 @@ function AtlasTreeClass:LoadSheet(sheetData, cache)
 	end
 	sheet = { }
 	cache[basename] = sheet
-	if not fileExists("TreeData/" .. self.treeVersion .. "/" .. basename) then
+	local imageName = self:ResolveImage(basename)
+	if not imageName then
 		return sheet
 	end
-	common.classes.PassiveTree.LoadImage(self, basename, sheetData.filename, sheet, "CLAMP")
+	common.classes.PassiveTree.LoadImage(self, imageName, sheetData.filename, sheet, "CLAMP")
 	sheet.width = sheetData.w or sheet.width
 	sheet.height = sheetData.h or sheet.height
 	return sheet
@@ -152,10 +171,10 @@ function AtlasTreeClass:LoadSprites(data)
 		addSheet(spriteType, sheets[#sheets])
 	end
 	for name in pairs(data.assets or { }) do
-		local fileName = name .. ".png"
-		if fileExists("TreeData/" .. self.treeVersion .. "/" .. fileName) then
+		local imageName = self:ResolveImage(name .. ".png")
+		if imageName then
 			local asset = { }
-			common.classes.PassiveTree.LoadImage(self, fileName, "", asset, "CLAMP")
+			common.classes.PassiveTree.LoadImage(self, imageName, "", asset, "CLAMP")
 			asset[1], asset[2], asset[3], asset[4] = 0, 0, 1, 1
 			self.assets[name] = asset
 		end

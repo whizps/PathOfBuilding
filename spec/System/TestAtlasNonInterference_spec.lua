@@ -32,9 +32,18 @@ describe("Atlas non-interference", function()
 		os.remove(libraryPath)
 	end)
 
-	for _, name in ipairs({ "Dual Savior", "Dual Wield Cospris CoC", "Generals Perforate Zerker" }) do
+	local buildFiles = { }
+	for file in lfs.dir("../spec/TestBuilds/3.13") do
+		if file:match("%.lua$") then
+			table.insert(buildFiles, file)
+		end
+	end
+	table.sort(buildFiles)
+
+	for _, file in ipairs(buildFiles) do
+		local name = file:gsub("%.lua$", "")
 		it("keeps calc output identical for " .. name, function()
-			local testBuild = LoadModule("../spec/TestBuilds/3.13/" .. name .. ".lua")
+			local testBuild = LoadModule("../spec/TestBuilds/3.13/" .. file)
 			loadBuildFromXML(testBuild.xml, name)
 			local before = snapshot()
 			loadBuildFromXML(testBuild.xml:gsub("</PathOfBuilding>", atlasSection() .. "</PathOfBuilding>"), name)

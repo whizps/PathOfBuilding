@@ -19,14 +19,14 @@ python3 src/Export/Atlas/import_atlas_tree.py
 
 The script:
 
-1. Lists every tag in `grindinggear/atlastree-export`.
+1. Lists every tag in the export repository.
 2. Picks the usable ones:
    - Release candidates (`-rc`) are skipped.
    - A trailing `-atlas` is ignored.
    - If two tags describe the same version, the one ending in `-atlas` wins.
 3. For each version, writes:
    - `src/TreeData/Atlas/<key>/tree.lua`, which is `data.json` converted to a Lua table.
-   - The sprite sheets the tree uses, at the zoom level PoB draws (`0.3835`, or the largest available).
+   - `src/TreeData/Atlas/<key>/images.lua`, which maps the sprite sheets the tree uses (at the zoom level PoB draws: `0.3835`, or the largest available) to files in `src/TreeData/Atlas/Images/`. Each image is stored once, even when several leagues use it. A full import also removes images no version uses anymore.
 4. Rewrites `src/Data/AtlasTreeVersions.lua`, ordered oldest to newest, with each Ruthless version right after its normal version.
 
 Re-running is safe: files are rewritten only when their content changed. Each run still downloads every `data.json` to compare, so it takes a couple of minutes.
@@ -52,9 +52,9 @@ This imports only that tag and adds it to the existing version list. Use `--tag`
 
 ## After importing
 
-1. Start PoB (see `docs/atlas/dev-linux.md` on Linux), open a build, go to **Atlas** and pick the new version in the version dropdown. Check that the tree draws and nodes can be allocated.
+1. Start PoB, open a build, go to **Atlas** and pick the new version in the version dropdown. Check that the tree draws and nodes can be allocated.
 2. When preparing a release, run `python3 update_manifest.py` so the new files are listed in `manifest.xml`.
-3. Commit `src/TreeData/Atlas/<key>/` and `src/Data/AtlasTreeVersions.lua`.
+3. Commit `src/TreeData/Atlas/` (including any new files in `Images/`) and `src/Data/AtlasTreeVersions.lua`.
 
 ## Troubleshooting
 
