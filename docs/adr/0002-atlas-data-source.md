@@ -47,7 +47,7 @@ Grinding Gear Games publishes the official atlas tree export at `github.com/grin
 | Dimension | Assessment |
 |-----------|------------|
 | Accuracy | Exact: official data |
-| Repo size | ~1 MB per version at the single zoom level used |
+| Repo size | ~4.5 MB per version (tree.lua + one zoom level of sprites), ~100 MB for all 23 versions |
 | Reliability | Works offline, deterministic |
 | Upkeep | One script run per league |
 
