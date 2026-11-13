@@ -34,9 +34,9 @@ Interop with the official site matters more than carrying the title. The version
 
 ## Consequences
 
-- The exact atlas encoding must be verified against a real link generated on pathofexile.com before release. If it differs from v6 or cannot be confirmed, fall back to Option A and update this ADR.
+- Verified: links exported by PoB open on pathofexile.com with the same allocated nodes.
 - Revisit: add poeplanner import if users ask.
 
 ## Action Items
-1. [ ] Capture a real atlas link from pathofexile.com and decode it by hand to confirm the layout.
+1. [x] Confirm the layout against the official site: an exported link opens on pathofexile.com with the same nodes.
 2. [x] `AtlasSpec:EncodeURL` / `DecodeURL`, plus a round-trip spec.
