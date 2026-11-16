@@ -19,12 +19,20 @@ Everything lands in `dist/NAME/` (or `dist/local-DATE-COMMIT/` for a local build
 ./make-pob pob1.0-atlas --dry-run       # build with that name, publish nothing
 ./make-pob pob1.0-atlas                 # build, test and publish, based on the newest official release
 ./make-pob pob1.0-atlas -t v2.67.2      # build, test and publish, based on official v2.67.2
+./make-pob -t dev                       # build on the newest upstream dev instead of a release
 ./make-pob --sync                       # merge the official dev branch into yours first
 ./make-pob --update-atlas               # import new atlas trees from GGG first (commits them)
 ```
 
 - **Release name:** `NAME` is the name of your release and of its git tag in your fork. It must be new. Your fork already contains every official tag (such as `v2.67.2`), so use your own names like `pob1.0-atlas`.
-- **Base version:** `-t` picks the official Path of Building release to build on. The default is the newest one.
+- **Base version:** `-t` picks the official Path of Building release to build on. The default is the newest one. `-t dev` builds on the newest upstream `dev` instead: the latest changes, but less tested than a release.
+
+## Keeping up with upstream
+
+Your Atlas work lives on the `atlas` branch, which sits on top of upstream's `dev`. The script always fetches upstream itself, so your fork's own copies of `dev` and `master` don't matter.
+
+- `./make-pob --sync` merges upstream `dev` into `atlas` before building. If there is a conflict, the script stops so you can resolve and commit it.
+- The release you build is upstream's code (a release tag, or `dev` with `-t dev`) plus your Atlas changes. Your branch only provides the Atlas part.
 
 ## What the script does
 

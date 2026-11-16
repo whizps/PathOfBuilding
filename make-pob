@@ -11,7 +11,8 @@ Usage:
   ./make-pob NAME --dry-run          build and test with that name, but don't publish
 
 Options:
-  -t, --tag TAG        official Path of Building release to build on (default: newest upstream release)
+  -t, --tag TAG        official Path of Building release to build on (default: newest upstream release),
+                       or "dev" for the newest upstream dev branch
   -n, --dry-run        build everything for NAME but skip pushing and publishing
       --sync           merge upstream dev into the current branch before building
       --update-atlas   import new atlas trees from GGG and commit them before building
@@ -127,7 +128,15 @@ git fetch --quiet --tags "$UPSTREAM" dev master
 if [ -z "$BASE_TAG" ]; then
 	BASE_TAG="$(git tag -l 'v*' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)"
 fi
-git rev-parse --quiet --verify "refs/tags/$BASE_TAG" >/dev/null || die "unknown Path of Building release tag '$BASE_TAG'"
+if [ "$BASE_TAG" = "dev" ]; then
+	BASE_REF="$(git rev-parse "$UPSTREAM/dev")"
+	BASE_TAG="dev-${BASE_REF:0:9}"
+	UPSTREAM_VERSION="$(git show "$BASE_REF:manifest.xml" | grep -oE '<Version number="[^"]+"' | sed -E 's/.*"([^"]+)"/\1/')-dev"
+else
+	git rev-parse --quiet --verify "refs/tags/$BASE_TAG" >/dev/null || die "unknown Path of Building release tag '$BASE_TAG' (use a tag like v2.67.2, or dev)"
+	BASE_REF="refs/tags/$BASE_TAG"
+	UPSTREAM_VERSION="${BASE_TAG#v}"
+fi
 BEHIND="$(git rev-list --count "HEAD..$UPSTREAM/dev")"
 info "building on official Path of Building $BASE_TAG"
 if [ "$BEHIND" -gt 0 ] && [ "$SYNC" -eq 0 ]; then
@@ -167,7 +176,6 @@ fi
 
 COMMIT="$(git rev-parse --short HEAD)"
 LABEL="${NAME:-local-$(date +%Y%m%d)-$COMMIT}"
-UPSTREAM_VERSION="${BASE_TAG#v}"
 VERSION="$UPSTREAM_VERSION-$LABEL"
 OUT="$ROOT/dist/$LABEL"
 WORK="$OUT/work"
@@ -226,7 +234,7 @@ RELEASE="$WORK/release"
 PATCHTEST="$WORK/patchtest"
 for dir in "$PRISTINE" "$RELEASE" "$PATCHTEST"; do
 	mkdir -p "$dir"
-	git archive "$BASE_TAG" | tar -x -C "$dir"
+	git archive "$BASE_REF" | tar -x -C "$dir"
 done
 ok "source trees"
 
@@ -255,20 +263,20 @@ if [ "$SKIP_TESTS" -eq 0 ]; then
 	ok "branch tests"
 
 	step "Running the test suite on $BASE_TAG with the Atlas tab"
-	check_suite release "$RELEASE" "$PRISTINE" "$BASE_TAG"
+	check_suite release "$RELEASE" "$PRISTINE" "$BASE_REF"
 	ok "release tests"
 
 	step "Checking that ModCache is unchanged"
 	find "$RELEASE" -type f | sort >"$WORK/files-before.txt"
 	docker run --rm -e HOME=/tmp -e REGENERATE_MOD_CACHE=1 -e "LUA_PATH=../runtime/lua/?.lua;../runtime/lua/?/init.lua" \
 		-w /workdir/src -v "$RELEASE":/workdir "$TEST_IMAGE" luajit HeadlessWrapper.lua >"$LOGS/modcache.log" 2>&1 || die "ModCache regeneration failed, see $LOGS/modcache.log"
-	if ! git show "$BASE_TAG:src/Data/ModCache.lua" | cmp -s - "$RELEASE/src/Data/ModCache.lua"; then
+	if ! git show "$BASE_REF:src/Data/ModCache.lua" | cmp -s - "$RELEASE/src/Data/ModCache.lua"; then
 		docker run --rm -e HOME=/tmp -e REGENERATE_MOD_CACHE=1 -e "LUA_PATH=../runtime/lua/?.lua;../runtime/lua/?/init.lua" \
 			-w /workdir/src -v "$PRISTINE":/workdir "$TEST_IMAGE" luajit HeadlessWrapper.lua >"$LOGS/modcache-baseline.log" 2>&1 || true
 		cmp -s "$PRISTINE/src/Data/ModCache.lua" "$RELEASE/src/Data/ModCache.lua" || die "the Atlas tab changes ModCache, see $LOGS/modcache.log"
 		info "ModCache differs from $BASE_TAG in the same way without the Atlas tab"
 	fi
-	git show "$BASE_TAG:src/Data/ModCache.lua" >"$RELEASE/src/Data/ModCache.lua"
+	git show "$BASE_REF:src/Data/ModCache.lua" >"$RELEASE/src/Data/ModCache.lua"
 	comm -13 "$WORK/files-before.txt" <(find "$RELEASE" -type f | sort) | while read -r stray; do rm -f "$stray"; done
 	ok "ModCache"
 else
@@ -320,13 +328,13 @@ if [ "$PUBLISH" -eq 1 ]; then
 	"${GIT_AUTH[@]}" push --quiet "$REMOTE" "HEAD:refs/heads/$BRANCH" || die "could not push $BRANCH to $REMOTE (pull and merge first?)"
 	info "pushed $BRANCH"
 	PREVIOUS="$(git ls-remote "$REMOTE" "refs/heads/$CHANNEL" | cut -f1)"
-	PARENTS=(-p "$(git rev-parse "$BASE_TAG^{commit}")")
+	PARENTS=(-p "$(git rev-parse "$BASE_REF^{commit}")")
 	if [ -n "$PREVIOUS" ]; then
 		"${GIT_AUTH[@]}" fetch --quiet "$REMOTE" "$CHANNEL"
 		PARENTS+=(-p "$PREVIOUS")
 	fi
 	export GIT_INDEX_FILE="$WORK/release.index"
-	git read-tree "$BASE_TAG^{tree}"
+	git read-tree "$BASE_REF^{tree}"
 	git --git-dir="$ROOT/.git" --work-tree="$RELEASE" -C "$RELEASE" add -A .
 	TREE="$(git write-tree)"
 	unset GIT_INDEX_FILE
