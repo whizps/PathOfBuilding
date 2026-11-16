@@ -1,0 +1,358 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+	cat <<'EOF'
+Build, test and (optionally) publish Path of Building with the Atlas tab.
+
+Usage:
+  ./make-pob                         build and test locally, nothing is published
+  ./make-pob NAME [-t TAG]           build, test and publish release NAME on your fork
+  ./make-pob NAME --dry-run          build and test with that name, but don't publish
+
+Options:
+  -t, --tag TAG        official Path of Building release to build on (default: newest upstream release)
+  -n, --dry-run        build everything for NAME but skip pushing and publishing
+      --sync           merge upstream dev into the current branch before building
+      --update-atlas   import new atlas trees from GGG and commit them before building
+      --skip-tests     skip the test suites (not allowed when publishing)
+      --keep-work      keep the intermediate files in dist/NAME/work
+      --remote NAME    git remote of your fork (default: fork)
+      --upstream NAME  git remote of the official repository (default: origin)
+      --channel NAME   branch in your fork that serves in-app updates (default: atlas-release)
+  -h, --help           show this help
+
+Output goes to dist/NAME/ (or dist/local-DATE-COMMIT/):
+  NAME.exe             full installer: Path of Building with the Atlas tab
+  NAME-portable.zip    the same, unzip and run
+  NAME-patch.exe       adds the Atlas tab to an existing official Path of Building install
+  release-notes.md     text used for the GitHub release
+  logs/                output of every step
+EOF
+}
+
+NAME=""
+BASE_TAG=""
+DRY_RUN=0
+SYNC=0
+UPDATE_ATLAS=0
+SKIP_TESTS=0
+KEEP_WORK=0
+REMOTE="fork"
+UPSTREAM="origin"
+CHANNEL="atlas-release"
+TEST_IMAGE="ghcr.io/pathofbuildingcommunity/pathofbuilding-tests:latest"
+
+while [ $# -gt 0 ]; do
+	case "$1" in
+		-t|--tag) BASE_TAG="${2:?missing value for $1}"; shift 2 ;;
+		-n|--dry-run) DRY_RUN=1; shift ;;
+		--sync) SYNC=1; shift ;;
+		--update-atlas) UPDATE_ATLAS=1; shift ;;
+		--skip-tests) SKIP_TESTS=1; shift ;;
+		--keep-work) KEEP_WORK=1; shift ;;
+		--remote) REMOTE="${2:?missing value for $1}"; shift 2 ;;
+		--upstream) UPSTREAM="${2:?missing value for $1}"; shift 2 ;;
+		--channel) CHANNEL="${2:?missing value for $1}"; shift 2 ;;
+		-h|--help) usage; exit 0 ;;
+		-*) echo "Unknown option: $1" >&2; usage >&2; exit 2 ;;
+		*)
+			if [ -n "$NAME" ]; then
+				echo "Only one release name can be given (got '$NAME' and '$1')" >&2
+				exit 2
+			fi
+			NAME="$1"; shift ;;
+	esac
+done
+
+ROOT="$(git -C "$(dirname "$0")" rev-parse --show-toplevel)"
+cd "$ROOT"
+
+if [ -t 1 ]; then
+	BOLD=$'\e[1m'; GREEN=$'\e[32m'; RED=$'\e[31m'; YELLOW=$'\e[33m'; RESET=$'\e[0m'
+else
+	BOLD=""; GREEN=""; RED=""; YELLOW=""; RESET=""
+fi
+STEP_START=0
+step() { STEP_START=$SECONDS; printf '\n%s==> %s%s\n' "$BOLD" "$*" "$RESET"; }
+ok() { printf '    %sok%s %s (%ss)\n' "$GREEN" "$RESET" "$*" "$((SECONDS - STEP_START))"; }
+info() { printf '    %s\n' "$*"; }
+warn() { printf '    %swarning:%s %s\n' "$YELLOW" "$RESET" "$*"; }
+die() { printf '\n%serror:%s %s\n' "$RED" "$RESET" "$*" >&2; exit 1; }
+
+PUBLISH=0
+if [ -n "$NAME" ] && [ "$DRY_RUN" -eq 0 ]; then
+	PUBLISH=1
+fi
+if [ -n "$NAME" ] && ! [[ "$NAME" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+	die "release name '$NAME' may only contain letters, digits, '.', '_' and '-'"
+fi
+if [ "$PUBLISH" -eq 1 ] && [ "$SKIP_TESTS" -eq 1 ]; then
+	die "--skip-tests is only allowed for local builds or --dry-run"
+fi
+
+PWSH="$(command -v pwsh || true)"
+[ -z "$PWSH" ] && [ -x /snap/bin/pwsh ] && PWSH=/snap/bin/pwsh
+GIT_AUTH=(git -c credential.helper= -c 'credential.helper=!gh auth git-credential')
+
+step "Checking tools and repository"
+missing=()
+for tool in git python3 docker makensis tar; do
+	command -v "$tool" >/dev/null || missing+=("$tool")
+done
+[ -z "$PWSH" ] && missing+=("pwsh")
+[ "$PUBLISH" -eq 1 ] && ! command -v gh >/dev/null && missing+=("gh")
+[ ${#missing[@]} -eq 0 ] || die "missing tools: ${missing[*]} (see packaging/README.md)"
+docker info >/dev/null 2>&1 || die "docker is not running"
+git remote get-url "$UPSTREAM" >/dev/null 2>&1 || die "no git remote '$UPSTREAM' for the official repository"
+FORK_URL="$(git remote get-url "$REMOTE" 2>/dev/null)" || die "no git remote '$REMOTE' for your fork"
+SLUG="$(sed -E 's#^(https://github\.com/|git@github\.com:)##; s#\.git$##' <<<"$FORK_URL")"
+[[ "$SLUG" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]] || die "could not read owner/repository from '$FORK_URL'"
+BRANCH="$(git branch --show-current)"
+[ -n "$BRANCH" ] || die "not on a branch"
+if [ -n "$(git status --porcelain)" ]; then
+	if [ "$PUBLISH" -eq 1 ] || [ "$SYNC" -eq 1 ] || [ "$UPDATE_ATLAS" -eq 1 ]; then
+		die "the working tree has uncommitted changes; commit or stash them first"
+	fi
+	warn "uncommitted changes are not included; the build uses the last commit"
+fi
+if [ "$PUBLISH" -eq 1 ]; then
+	gh auth status >/dev/null 2>&1 || die "gh is not logged in (run: gh auth login)"
+fi
+info "branch $BRANCH, fork $SLUG, update channel $CHANNEL"
+ok "tools and repository"
+
+step "Fetching the official repository"
+git fetch --quiet --tags "$UPSTREAM" dev master
+if [ -z "$BASE_TAG" ]; then
+	BASE_TAG="$(git tag -l 'v*' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)"
+fi
+git rev-parse --quiet --verify "refs/tags/$BASE_TAG" >/dev/null || die "unknown Path of Building release tag '$BASE_TAG'"
+BEHIND="$(git rev-list --count "HEAD..$UPSTREAM/dev")"
+info "building on official Path of Building $BASE_TAG"
+if [ "$BEHIND" -gt 0 ] && [ "$SYNC" -eq 0 ]; then
+	warn "$BRANCH is $BEHIND commits behind $UPSTREAM/dev (use --sync to merge them)"
+fi
+ok "official repository"
+
+if [ "$SYNC" -eq 1 ]; then
+	step "Merging $UPSTREAM/dev into $BRANCH"
+	if [ "$BEHIND" -gt 0 ]; then
+		git merge --no-edit "$UPSTREAM/dev" || die "merge conflict; resolve it, commit, and run make-pob again"
+	fi
+	ok "$BRANCH is up to date with $UPSTREAM/dev"
+fi
+
+if [ "$UPDATE_ATLAS" -eq 1 ]; then
+	step "Importing atlas trees from GGG"
+	python3 src/Export/Atlas/import_atlas_tree.py
+	rm -rf src/Export/Atlas/__pycache__
+	if [ -n "$(git status --porcelain -- src/TreeData/Atlas src/Data/AtlasTreeVersions.lua)" ]; then
+		git add -A -- src/TreeData/Atlas src/Data/AtlasTreeVersions.lua
+		git commit --quiet -m "Update atlas tree data"
+		info "committed new atlas tree data"
+	else
+		info "atlas tree data is already up to date"
+	fi
+	ok "atlas trees"
+fi
+
+if [ "$PUBLISH" -eq 1 ]; then
+	step "Checking that release '$NAME' is new"
+	git rev-parse --quiet --verify "refs/tags/$NAME" >/dev/null && die "tag '$NAME' already exists locally"
+	[ -n "$(git ls-remote --tags "$REMOTE" "refs/tags/$NAME")" ] && die "tag '$NAME' already exists on $SLUG"
+	gh release view "$NAME" --repo "$SLUG" >/dev/null 2>&1 && die "release '$NAME' already exists on $SLUG"
+	ok "release name is free"
+fi
+
+COMMIT="$(git rev-parse --short HEAD)"
+LABEL="${NAME:-local-$(date +%Y%m%d)-$COMMIT}"
+UPSTREAM_VERSION="${BASE_TAG#v}"
+VERSION="$UPSTREAM_VERSION-$LABEL"
+OUT="$ROOT/dist/$LABEL"
+WORK="$OUT/work"
+LOGS="$OUT/logs"
+rm -rf "$OUT"
+mkdir -p "$WORK" "$LOGS"
+
+docker image inspect "$TEST_IMAGE" >/dev/null 2>&1 || docker pull --quiet "$TEST_IMAGE" >/dev/null
+
+run_busted() {
+	local dir="$1" log="$2"
+	shift 2
+	docker run --rm -e HOME=/tmp -w /workdir -v "$dir":/workdir:ro "$TEST_IMAGE" busted --lua=luajit "$@" >"$log" 2>&1 || true
+	grep -q "successes" "$log" || die "the test suite did not run, see $log"
+}
+
+failures_of() {
+	grep -E '^(Failure|Error) -> ' "$1" | sed -E 's/^(Failure|Error) -> //' | sort -u || true
+}
+
+check_suite() {
+	local label="$1" dir="$2" baseline="$3" log="$LOGS/tests-$1.log"
+	run_busted "$dir" "$log"
+	info "$(grep "successes" "$log" | tail -1)"
+	local current
+	current="$(failures_of "$log")"
+	if [ -z "$current" ]; then
+		return
+	fi
+	local specs=()
+	mapfile -t specs < <(sed -E 's/ @ .*//' <<<"$current" | sort -u)
+	if [ ! -d "$baseline" ]; then
+		mkdir -p "$baseline"
+		git archive "$4" | tar -x -C "$baseline"
+	fi
+	run_busted "$baseline" "$LOGS/tests-$label-baseline.log" "${specs[@]}"
+	local new
+	new="$(comm -23 <(echo "$current") <(failures_of "$LOGS/tests-$label-baseline.log"))"
+	if [ -n "$new" ]; then
+		die "new test failures in $label (see $log):"$'\n'"$new"
+	fi
+	while read -r failure; do
+		info "known failure, also fails without the Atlas tab: $failure"
+	done <<<"$current"
+}
+
+step "Building the Atlas payload from $BRANCH ($COMMIT)"
+python3 packaging/build_payload.py --repo "$ROOT" --ref HEAD --base "$UPSTREAM/dev" --out "$WORK/payload" >"$LOGS/payload.log"
+PAYLOAD="$WORK/payload/payload"
+info "$(tail -1 "$LOGS/payload.log")"
+ok "payload"
+
+step "Preparing official Path of Building $BASE_TAG"
+PRISTINE="$WORK/pristine"
+RELEASE="$WORK/release"
+PATCHTEST="$WORK/patchtest"
+for dir in "$PRISTINE" "$RELEASE" "$PATCHTEST"; do
+	mkdir -p "$dir"
+	git archive "$BASE_TAG" | tar -x -C "$dir"
+done
+ok "source trees"
+
+step "Testing the patch installer on $BASE_TAG"
+"$PWSH" -NoProfile -File packaging/install.ps1 -PoBDir "$PATCHTEST" -PayloadDir "$PAYLOAD" >"$LOGS/patch-install.log"
+"$PWSH" -NoProfile -File packaging/install.ps1 -PoBDir "$PATCHTEST" -PayloadDir "$PAYLOAD" >"$LOGS/patch-reinstall.log"
+"$PWSH" -NoProfile -File packaging/install.ps1 -PoBDir "$PATCHTEST" -PayloadDir "$PAYLOAD" -Uninstall >"$LOGS/patch-uninstall.log"
+rm -rf "$PATCHTEST/src/AtlasTab"
+diff -r -q "$PRISTINE" "$PATCHTEST" >"$LOGS/patch-roundtrip.diff" || die "uninstalling the patch did not restore the original files, see $LOGS/patch-roundtrip.diff"
+info "install, reinstall and uninstall leave the official files byte-identical"
+rm -rf "$PATCHTEST"
+ok "patch installer"
+
+step "Applying the Atlas tab to $BASE_TAG"
+"$PWSH" -NoProfile -File packaging/install.ps1 -PoBDir "$RELEASE" -PayloadDir "$PAYLOAD" >"$LOGS/apply.log"
+STYLE="$(grep -oE '\((modern|legacy),' "$LOGS/apply.log" | tr -d '(,' | tail -1)"
+[ -n "$STYLE" ] || die "could not apply the Atlas tab, see $LOGS/apply.log"
+rm -rf "$RELEASE/src/AtlasTab"
+cp "$WORK/payload/specs/$STYLE/"*.lua "$RELEASE/spec/System/"
+info "$BASE_TAG uses the $STYLE class style"
+ok "release source tree"
+
+if [ "$SKIP_TESTS" -eq 0 ]; then
+	step "Running the test suite on $BRANCH"
+	check_suite branch "$ROOT" "$WORK/branch-base" "$(git merge-base HEAD "$UPSTREAM/dev")"
+	ok "branch tests"
+
+	step "Running the test suite on $BASE_TAG with the Atlas tab"
+	check_suite release "$RELEASE" "$PRISTINE" "$BASE_TAG"
+	ok "release tests"
+
+	step "Checking that ModCache is unchanged"
+	find "$RELEASE" -type f | sort >"$WORK/files-before.txt"
+	docker run --rm -e HOME=/tmp -e REGENERATE_MOD_CACHE=1 -e "LUA_PATH=../runtime/lua/?.lua;../runtime/lua/?/init.lua" \
+		-w /workdir/src -v "$RELEASE":/workdir "$TEST_IMAGE" luajit HeadlessWrapper.lua >"$LOGS/modcache.log" 2>&1 || die "ModCache regeneration failed, see $LOGS/modcache.log"
+	if ! git show "$BASE_TAG:src/Data/ModCache.lua" | cmp -s - "$RELEASE/src/Data/ModCache.lua"; then
+		docker run --rm -e HOME=/tmp -e REGENERATE_MOD_CACHE=1 -e "LUA_PATH=../runtime/lua/?.lua;../runtime/lua/?/init.lua" \
+			-w /workdir/src -v "$PRISTINE":/workdir "$TEST_IMAGE" luajit HeadlessWrapper.lua >"$LOGS/modcache-baseline.log" 2>&1 || true
+		cmp -s "$PRISTINE/src/Data/ModCache.lua" "$RELEASE/src/Data/ModCache.lua" || die "the Atlas tab changes ModCache, see $LOGS/modcache.log"
+		info "ModCache differs from $BASE_TAG in the same way without the Atlas tab"
+	fi
+	git show "$BASE_TAG:src/Data/ModCache.lua" >"$RELEASE/src/Data/ModCache.lua"
+	comm -13 "$WORK/files-before.txt" <(find "$RELEASE" -type f | sort) | while read -r stray; do rm -f "$stray"; done
+	ok "ModCache"
+else
+	warn "tests skipped"
+fi
+
+step "Staging Windows files"
+python3 packaging/stage_release.py --tree "$RELEASE" --out "$WORK/stage" --version "$VERSION" --repo "$SLUG" --channel "$CHANNEL" >"$LOGS/stage.log"
+info "$(tail -1 "$LOGS/stage.log")"
+for required in "Path of Building.exe" Launch.lua Classes/AtlasTab.lua Data/AtlasTreeVersions.lua TreeData/Atlas/Images manifest.xml; do
+	[ -e "$WORK/stage/$required" ] || die "staged files are missing $required"
+done
+grep -q "branch=\"$CHANNEL\"" "$WORK/stage/manifest.xml" || die "staged manifest does not point at the update channel"
+ok "staged $(find "$WORK/stage" -type f | wc -l) files"
+
+step "Building installers and the portable zip"
+python3 - "$WORK/stage" "$OUT/$LABEL-portable.zip" >"$LOGS/portable.log" 2>&1 <<'EOF' &
+import os, sys, zipfile
+stage, target = sys.argv[1], sys.argv[2]
+with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as archive:
+    for root, _, files in os.walk(stage):
+        for name in sorted(files):
+            path = os.path.join(root, name)
+            archive.write(path, os.path.relpath(path, stage))
+EOF
+ZIP_PID=$!
+makensis -V2 -DVERSION="$LABEL" -DPAYLOAD="$PAYLOAD" -DOUTFILE="$OUT/$LABEL-patch.exe" packaging/patch-installer.nsi >"$LOGS/patch-installer.log" 2>&1 || die "building the patch installer failed, see $LOGS/patch-installer.log"
+info "$LABEL-patch.exe"
+makensis -V2 -DVERSION="$BASE_TAG" -DRELEASE_NAME="$LABEL" -DSTAGE="$WORK/stage" -DOUTFILE="$OUT/$LABEL.exe" packaging/pob-installer.nsi >"$LOGS/installer.log" 2>&1 || die "building the installer failed, see $LOGS/installer.log"
+info "$LABEL.exe"
+wait "$ZIP_PID" || die "building the portable zip failed, see $LOGS/portable.log"
+info "$LABEL-portable.zip"
+ok "artifacts"
+
+cat >"$OUT/release-notes.md" <<EOF
+Path of Building $BASE_TAG with the **Atlas tab** for planning atlas passive trees.
+Built from \`$BRANCH\` at $COMMIT.
+
+### Downloads
+- **$LABEL.exe**: full installer. Installs *Path of Building (Atlas)* next to the official Path of Building (default folder \`%APPDATA%\\Path of Building Atlas\`). Both share your builds and settings. Updates arrive through the normal *Update* button in the program.
+- **$LABEL-portable.zip**: the same program without installing. Unzip it anywhere and run \`Path of Building.exe\`. Builds and settings are kept next to the program.
+- **$LABEL-patch.exe**: adds the Atlas tab to an existing official Path of Building install. Run it again after every official Path of Building update.
+
+The installers are not signed. If Windows SmartScreen warns, click **More info** and then **Run anyway**.
+EOF
+
+if [ "$PUBLISH" -eq 1 ]; then
+	step "Publishing $NAME to $SLUG"
+	"${GIT_AUTH[@]}" push --quiet "$REMOTE" "HEAD:refs/heads/$BRANCH" || die "could not push $BRANCH to $REMOTE (pull and merge first?)"
+	info "pushed $BRANCH"
+	PREVIOUS="$(git ls-remote "$REMOTE" "refs/heads/$CHANNEL" | cut -f1)"
+	PARENTS=(-p "$(git rev-parse "$BASE_TAG^{commit}")")
+	if [ -n "$PREVIOUS" ]; then
+		"${GIT_AUTH[@]}" fetch --quiet "$REMOTE" "$CHANNEL"
+		PARENTS+=(-p "$PREVIOUS")
+	fi
+	export GIT_INDEX_FILE="$WORK/release.index"
+	git read-tree "$BASE_TAG^{tree}"
+	git --git-dir="$ROOT/.git" --work-tree="$RELEASE" -C "$RELEASE" add -A .
+	TREE="$(git write-tree)"
+	unset GIT_INDEX_FILE
+	RELEASE_COMMIT="$(git commit-tree "$TREE" "${PARENTS[@]}" -m "Release $NAME: Path of Building $BASE_TAG with the Atlas tab" -m "Atlas tab from $BRANCH at $COMMIT.")"
+	git tag -a "$NAME" "$RELEASE_COMMIT" -m "$NAME: Path of Building $BASE_TAG with the Atlas tab"
+	if ! "${GIT_AUTH[@]}" push --quiet "$REMOTE" "$RELEASE_COMMIT:refs/heads/$CHANNEL" "refs/tags/$NAME"; then
+		git tag -d "$NAME" >/dev/null
+		die "could not push the release branch and tag"
+	fi
+	info "pushed $CHANNEL and tag $NAME"
+	gh release create "$NAME" --repo "$SLUG" --verify-tag --title "$NAME (Path of Building $BASE_TAG)" --notes-file "$OUT/release-notes.md" \
+		"$OUT/$LABEL.exe" "$OUT/$LABEL-patch.exe" "$OUT/$LABEL-portable.zip" >"$LOGS/release.log" 2>&1 || die "creating the GitHub release failed, see $LOGS/release.log"
+	info "$(tail -1 "$LOGS/release.log")"
+	ok "published"
+fi
+
+if [ "$KEEP_WORK" -eq 0 ]; then
+	rm -rf "$WORK"
+fi
+
+printf '\n%sDone.%s Artifacts in %s:\n' "$BOLD" "$RESET" "${OUT#"$ROOT"/}"
+for file in "$LABEL.exe" "$LABEL-portable.zip" "$LABEL-patch.exe"; do
+	printf '    %-40s %s\n' "$file" "$(du -h "$OUT/$file" | cut -f1)"
+done
+if [ "$PUBLISH" -eq 0 ]; then
+	printf '\nNothing was published.'
+	[ -n "$NAME" ] && printf ' Run ./make-pob %s without --dry-run to publish it.' "$NAME"
+	printf '\n'
+fi
