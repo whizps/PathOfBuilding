@@ -15,6 +15,14 @@ local m_cos = math.cos
 local m_pi = math.pi
 
 LoadModule("GameVersions")
+atlasTreeVersions = LoadModule("Data/AtlasTreeVersions")
+atlasTreeVersionMap = { }
+for _, atlasVersion in ipairs(atlasTreeVersions) do
+	atlasTreeVersionMap[atlasVersion.key] = atlasVersion
+	if not atlasVersion.ruthless then
+		latestAtlasTreeVersion = atlasVersion.key
+	end
+end
 LoadModule("Modules/Common")
 LoadModule("Modules/CalcFormat")
 LoadModule("Modules/Data")
@@ -143,6 +151,7 @@ function main:Init()
 	self.tooltipLines = { }
 
 	self.tree = { }
+	self.atlasTrees = { }
 	self:LoadTree(latestTreeVersion)
 
 	if self.userPath then
@@ -323,6 +332,16 @@ function main:LoadTree(treeVersion)
 		return self.tree[treeVersion]
 	end
 	return nil
+end
+
+function main:LoadAtlasTree(key)
+	if not atlasTreeVersionMap[key] then
+		key = latestAtlasTreeVersion
+	end
+	if not self.atlasTrees[key] then
+		self.atlasTrees[key] = new("AtlasTree", key)
+	end
+	return self.atlasTrees[key]
 end
 
 function main:CanExit()

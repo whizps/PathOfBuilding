@@ -469,6 +469,10 @@ function buildMode:Init(dbFileName, buildName, buildXML, convertBuild, importLin
 		self.viewMode = "COMPARE"
 	end)
 	self.controls.modeCompare.locked = function() return self.viewMode == "COMPARE" end
+	self.controls.modeAtlas = new("ButtonControl", {"LEFT",self.controls.modeCompare,"RIGHT"}, {4, 0, 72, 20}, "Atlas", function()
+		self.viewMode = "ATLAS"
+	end)
+	self.controls.modeAtlas.locked = function() return self.viewMode == "ATLAS" end
 	-- Skills
 	self.controls.mainSkillLabel = new("LabelControl", {"TOPLEFT",self.anchorSideBar,"TOPLEFT"}, {0, 80, 300, 16}, "^7Main Skill:")
 	self.controls.mainSocketGroup = new("DropDownControl", {"TOPLEFT",self.controls.mainSkillLabel,"BOTTOMLEFT"}, {0, 2, 300, 18}, nil, function(index, value)
@@ -604,6 +608,7 @@ function buildMode:Init(dbFileName, buildName, buildXML, convertBuild, importLin
 	self.skillsTab = new("SkillsTab", self)
 	self.calcsTab = new("CalcsTab", self)
 	self.compareTab = new("CompareTab", self)
+	self.atlasTab = new("AtlasTab", self)
 	-- Used for pined calcs panes
 	self.overlayPanes = { }
 
@@ -621,6 +626,7 @@ function buildMode:Init(dbFileName, buildName, buildXML, convertBuild, importLin
 	}
 	self.legacyLoaders = { -- Special loaders for legacy sections
 		["Spec"] = self.treeTab,
+		["Atlas"] = self.atlasTab,
 	}
 	
 	--special rebuild to properly initialise boss placeholders
@@ -998,7 +1004,7 @@ end
 function buildMode:Save(xml)
 	xml.attrib = {
 		targetVersion = self.targetVersion,
-		viewMode = self.viewMode,
+		viewMode = self.viewMode == "ATLAS" and "TREE" or self.viewMode,
 		level = tostring(self.characterLevel),
 		className = self.spec.curClassName,
 		ascendClassName = self.spec.curAscendClassName,
@@ -1291,6 +1297,8 @@ function buildMode:OnFrame(inputEvents)
 		self.calcsTab:Draw(tabViewPort, inputEvents)
 	elseif self.viewMode == "COMPARE" then
 		self.compareTab:Draw(tabViewPort, inputEvents)
+	elseif self.viewMode == "ATLAS" then
+		self.atlasTab:Draw(tabViewPort, inputEvents)
 	end
 
 	-- Draw overlay panes on top of all tab content (last = topmost)

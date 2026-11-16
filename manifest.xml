@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <PoBVersion>
-	<Version number="2.67.2" />
-	<Source part="default" url="https://raw.githubusercontent.com/PathOfBuildingCommunity/PathOfBuilding/{branch}/" />
-	<Source part="runtime" platform="win32" url="https://raw.githubusercontent.com/PathOfBuildingCommunity/PathOfBuilding/{branch}/runtime/" />
-	<Source part="program" url="https://raw.githubusercontent.com/PathOfBuildingCommunity/PathOfBuilding/{branch}/src/" />
-	<Source part="tree" url="https://raw.githubusercontent.com/PathOfBuildingCommunity/PathOfBuilding/{branch}/src/" />
+	<Version number="2.67.2-PathOfBuilding-Atlas-0.1" />
+	<Source part="default" url="https://raw.githubusercontent.com/whizps/PathOfBuilding/{branch}/" />
+	<Source part="runtime" platform="win32" url="https://raw.githubusercontent.com/whizps/PathOfBuilding/{branch}/runtime/" />
+	<Source part="program" url="https://raw.githubusercontent.com/whizps/PathOfBuilding/{branch}/src/" />
+	<Source part="tree" url="https://raw.githubusercontent.com/whizps/PathOfBuilding/{branch}/src/" />
 	<File name="changelog.txt" part="default" sha1="cb4064c729074463baff1984f097aef0eedf8339" />
 	<File name="help.txt" part="default" sha1="e486cb63a78f5ca355430b67fa23e02fd30f5771" />
 	<File name="LICENSE.md" part="default" sha1="c77635aa1ba0a2ffe8eb72f93b3376e3a3d2041a" />
@@ -121,6 +121,13 @@
 	<File name="Assets/veiledicon.png" part="program" sha1="035479a7ee7847969ef50ff428e3bee897fba671" />
 	<File name="Assets/vestigialicon.png" part="program" sha1="ecb5dd4b9aed1cac0c1a677b18838ae9c62744d7" />
 	<File name="Assets/warlordicon.png" part="program" sha1="cca050c84884f5c0bb1380ece51d3c4b32be4900" />
+	<File name="Classes/AtlasLibrary.lua" part="program" sha1="956f1ab237590d841821082ba4630f6e8194daf5" />
+	<File name="Classes/AtlasSpec.lua" part="program" sha1="53e789548ff245a57d5fe1fdf47917c146301ba6" />
+	<File name="Classes/AtlasSpecListControl.lua" part="program" sha1="77219a3b94ffb381ce69264d215df210385b00d5" />
+	<File name="Classes/AtlasStatPanel.lua" part="program" sha1="a87b75208670dc41eb129423873077675d18619a" />
+	<File name="Classes/AtlasTab.lua" part="program" sha1="bb558eea8249ad19bb06d7a8866288c4919cd372" />
+	<File name="Classes/AtlasTree.lua" part="program" sha1="872243fb09434cb7232c6ac2d51b67872a9e4848" />
+	<File name="Classes/AtlasTreeView.lua" part="program" sha1="6cd1a81a70ff59b053a952aca4e8200a64ad0f90" />
 	<File name="Classes/BuildListControl.lua" part="program" sha1="240954df96d392504962bc47230e0a0e49bceae0" />
 	<File name="Classes/ButtonControl.lua" part="program" sha1="697870f9f43eee2c804be087849b46849c83153a" />
 	<File name="Classes/CalcBreakdownControl.lua" part="program" sha1="d136d21c742679fd9269ad4be46f64c731390db5" />
@@ -195,6 +202,7 @@
 	<File name="Classes/TradeStatWeightMultiplierListControl.lua" part="program" sha1="df442a192fcaf26558e7485b9c31d2b4e79dc6fc" />
 	<File name="Classes/TreeTab.lua" part="program" sha1="a3af8fff50d314f3119362c79670a0e7d3e6dce1" />
 	<File name="Classes/UndoHandler.lua" part="program" sha1="ce4835c384c834da0de47b0302b1e774c8300c6b" />
+	<File name="Data/AtlasTreeVersions.lua" part="program" sha1="5d784644fff62aac1b615c3c73c66e77cc703809" />
 	<File name="Data/Bases/amulet.lua" part="program" sha1="0c35de0a6731169f674fee440af79e5215ba627e" />
 	<File name="Data/Bases/axe.lua" part="program" sha1="0b7a87867c677b95ccf1bdd0937f0874857f35af" />
 	<File name="Data/Bases/belt.lua" part="program" sha1="2ac4a895bba5dfe57fe8bcb90ead339a4b896cc3" />
@@ -373,7 +381,7 @@
 	<File name="GameVersions.lua" part="program" sha1="2ba59bb7443d8f829861fdd5794c57db14c894b3" />
 	<File name="Launch.lua" part="program" sha1="53c2f6a73b2e871722837d19708f4e5e8a1dc60b" />
 	<File name="LaunchServer.lua" part="program" sha1="f15bdfbedaf887e19556490dce49b720f8365379" />
-	<File name="Modules/Build.lua" part="program" sha1="1ef2cc076312e8f79506dc9e56b7c486a88df584" />
+	<File name="Modules/Build.lua" part="program" sha1="9d2770ad8d1097fbddf89c2bafbc8ee0c1605679" />
 	<File name="Modules/BuildDisplayStats.lua" part="program" sha1="f1b0f89f803ae4493154ca5b78ddda457679dd30" />
 	<File name="Modules/BuildList.lua" part="program" sha1="c7fd60483bda620b9fb1808f20c4ef532441fb25" />
 	<File name="Modules/BuildListHelpers.lua" part="program" sha1="b6622dc4abc685b094fc14b8e65120d897d55da5" />
@@ -399,7 +407,7 @@
 	<File name="Modules/DataLegionLookUpTableHelper.lua" part="program" sha1="617477a663b7b6ece264a862c407eb05c2381fae" />
 	<File name="Modules/ItemSlotHelper.lua" part="program" sha1="4b7d441f9ade5d57c413aa1f8f8067b654cfb927" />
 	<File name="Modules/ItemTools.lua" part="program" sha1="2ea3bf94281203188090982c4ecd91e0ade782e4" />
-	<File name="Modules/Main.lua" part="program" sha1="fe81c6c5379c558bbdcab1376b11488433565408" />
+	<File name="Modules/Main.lua" part="program" sha1="298035befcf8bf79e933422fa6d2df353d1338bf" />
 	<File name="Modules/ModParser.lua" part="program" sha1="9c8ba0ebc313d58ee8cf1ba090460f1d6e00e4dc" />
 	<File name="Modules/ModTools.lua" part="program" sha1="e32d3c0c320f7add6e70987b5de8ff3370d0b321" />
 	<File name="Modules/PantheonTools.lua" part="program" sha1="ebe91a7d8f8444a6061acf4758da0e775cc8c314" />
@@ -407,7 +415,7 @@
 	<File name="Modules/ToastNotification.lua" part="program" sha1="7eda73b862f789e0acff647bc11a6823199d7800" />
 	<File name="Modules/Utils.lua" part="program" sha1="ff63549f844f9a81689d7ee9f6138ad12c782f72" />
 	<File name="UpdateApply.lua" part="program" sha1="4dd42f413cb89a963e4ae1b40e214985b909c05b" />
-	<File name="UpdateCheck.lua" part="program" sha1="2f3861b4e89838150f16e4e09eb6012b0800fa68" />
+	<File name="UpdateCheck.lua" part="program" sha1="83da1cda9d4699761b5bef7ed85c6ca5fcbf311b" />
 	<File name="abseil_dll.dll" part="runtime" runtime="win32" sha1="9bcb9ca812e69350cca49c7ccaa507371e52a50d" />
 	<File name="concrt140.dll" part="runtime" runtime="win32" sha1="1ce87fac4c22aae82a81ddb26952c074b744e78d" />
 	<File name="d3dcompiler_47.dll" part="runtime" runtime="win32" sha1="27a4eff95e7f4a359718fda7138a528147969b27" />
@@ -1216,6 +1224,137 @@
 	<File name="TreeData/AscendancyFrameSmallCanAllocate.png" part="tree" sha1="a67ab7791d2058b4322039f42b4ff49214fbcbb7" />
 	<File name="TreeData/AscendancyFrameSmallNormal.png" part="tree" sha1="76574b733671962c07d4a6974abc6403ad764ab0" />
 	<File name="TreeData/AscendancyMiddle.png" part="tree" sha1="fa33df0224c4f48c90f170cbe3c1382a5ec07642" />
+	<File name="TreeData/Atlas/3_18/images.lua" part="tree" sha1="66f88fd841201b757b2ee75fce1f694627175e49" />
+	<File name="TreeData/Atlas/3_18/tree.lua" part="tree" sha1="49fbbb733c382d4753c4b5adda5193a6cef8ab9f" />
+	<File name="TreeData/Atlas/3_18_1/images.lua" part="tree" sha1="74ae7096f9d1a01c1eb157077ebca1904c8c2052" />
+	<File name="TreeData/Atlas/3_18_1/tree.lua" part="tree" sha1="9bf7de4d9074bac4aee60a00331cbbd43d14c1b8" />
+	<File name="TreeData/Atlas/3_19/images.lua" part="tree" sha1="f430eae5f2daacdab6f4ff15f8e0129cf77376df" />
+	<File name="TreeData/Atlas/3_19/tree.lua" part="tree" sha1="f18f4e1c9de8e482863a1c14ffde6bb843db1bbd" />
+	<File name="TreeData/Atlas/3_20/images.lua" part="tree" sha1="9cbdbfef66bcc10e24f2be6e151988a30295fed7" />
+	<File name="TreeData/Atlas/3_20/tree.lua" part="tree" sha1="d7ef0bb88223155a615dfa772bb391269318cdfb" />
+	<File name="TreeData/Atlas/3_20_1/images.lua" part="tree" sha1="d875d1a6a99a609add088230e48b212bd079b4f4" />
+	<File name="TreeData/Atlas/3_20_1/tree.lua" part="tree" sha1="c01eff5c301dea17870fbad92d0be5d2bea8e9b1" />
+	<File name="TreeData/Atlas/3_20_1_ruthless/images.lua" part="tree" sha1="d875d1a6a99a609add088230e48b212bd079b4f4" />
+	<File name="TreeData/Atlas/3_20_1_ruthless/tree.lua" part="tree" sha1="c20018c3c1dfaa84c9076734b79bccbaa780e80e" />
+	<File name="TreeData/Atlas/3_20_ruthless/images.lua" part="tree" sha1="9cbdbfef66bcc10e24f2be6e151988a30295fed7" />
+	<File name="TreeData/Atlas/3_20_ruthless/tree.lua" part="tree" sha1="1a8724e0844c6b24c3624d0215754b5a4ad50ca9" />
+	<File name="TreeData/Atlas/3_21/images.lua" part="tree" sha1="16592fcd5cc3651c4c709c8685b353f6b0678e5b" />
+	<File name="TreeData/Atlas/3_21/tree.lua" part="tree" sha1="3060b2b1fd39008290d2821d2d0c5142652ae4bf" />
+	<File name="TreeData/Atlas/3_21_ruthless/images.lua" part="tree" sha1="16592fcd5cc3651c4c709c8685b353f6b0678e5b" />
+	<File name="TreeData/Atlas/3_21_ruthless/tree.lua" part="tree" sha1="f28b83a79996beb771c9c58492a9f697ea4f1b3f" />
+	<File name="TreeData/Atlas/3_22/images.lua" part="tree" sha1="7c6c623f52820ec1ab06f6578710dfe9a1fdf2ce" />
+	<File name="TreeData/Atlas/3_22/tree.lua" part="tree" sha1="48244f8e2cf8638884c68f667830b1488a9402ee" />
+	<File name="TreeData/Atlas/3_22_ruthless/images.lua" part="tree" sha1="7c6c623f52820ec1ab06f6578710dfe9a1fdf2ce" />
+	<File name="TreeData/Atlas/3_22_ruthless/tree.lua" part="tree" sha1="12f14fc504578d83d49916da568b84fbd28482a4" />
+	<File name="TreeData/Atlas/3_23/images.lua" part="tree" sha1="cd8267377cb1c7681f2c2843cc0439b54995cd86" />
+	<File name="TreeData/Atlas/3_23/tree.lua" part="tree" sha1="3526c1218c1b022c2fff7183a42068f90c9ab3fd" />
+	<File name="TreeData/Atlas/3_23_ruthless/images.lua" part="tree" sha1="cd8267377cb1c7681f2c2843cc0439b54995cd86" />
+	<File name="TreeData/Atlas/3_23_ruthless/tree.lua" part="tree" sha1="a7e32f2f97d1b87cf2a4200b4f55eed43d3b6252" />
+	<File name="TreeData/Atlas/3_24/images.lua" part="tree" sha1="4f999aa6dbbeb933d39990aab865635c608a7f78" />
+	<File name="TreeData/Atlas/3_24/tree.lua" part="tree" sha1="605b1980ebcc238dcd6b46add5696bfdc15c8629" />
+	<File name="TreeData/Atlas/3_24_ruthless/images.lua" part="tree" sha1="4f999aa6dbbeb933d39990aab865635c608a7f78" />
+	<File name="TreeData/Atlas/3_24_ruthless/tree.lua" part="tree" sha1="53c9eafba6eb44ac12879427860af1cbdbd3d408" />
+	<File name="TreeData/Atlas/3_25/images.lua" part="tree" sha1="c75a9065d6687530b01c27a06aa633e0ad58987a" />
+	<File name="TreeData/Atlas/3_25/tree.lua" part="tree" sha1="8d02bd05e68cb4de8a24fd25b706c991b68d8c37" />
+	<File name="TreeData/Atlas/3_25_ruthless/images.lua" part="tree" sha1="c75a9065d6687530b01c27a06aa633e0ad58987a" />
+	<File name="TreeData/Atlas/3_25_ruthless/tree.lua" part="tree" sha1="45a9c3025f3f769dfab813261c0c17cf23370fee" />
+	<File name="TreeData/Atlas/3_26/images.lua" part="tree" sha1="4a426ba3f517736e743167f253906c6d94230e2b" />
+	<File name="TreeData/Atlas/3_26/tree.lua" part="tree" sha1="7888f07e5c91ce0eec2188b4f83aef2061fcfb12" />
+	<File name="TreeData/Atlas/3_27/images.lua" part="tree" sha1="d1042abe491b5fe0b8f6679a5b350389722018c4" />
+	<File name="TreeData/Atlas/3_27/tree.lua" part="tree" sha1="b96d28c80ad803d4eba3cea6f6a365bfe5a6986c" />
+	<File name="TreeData/Atlas/3_28/images.lua" part="tree" sha1="f492e71b17fba696295b21aef0ca05ec2418eb2c" />
+	<File name="TreeData/Atlas/3_28/tree.lua" part="tree" sha1="a6eab6461b8ced1cc369a2fbaea7640269a90f26" />
+	<File name="TreeData/Atlas/3_29/images.lua" part="tree" sha1="af2ae5aba365382f4d0b71c519dcf703a0b29d99" />
+	<File name="TreeData/Atlas/3_29/tree.lua" part="tree" sha1="62332b5d8d3c21f4460a899ff70840abcb81d905" />
+	<File name="TreeData/Atlas/3_29_1/images.lua" part="tree" sha1="92952c319a0fd4232c38e714a71db8072b83c248" />
+	<File name="TreeData/Atlas/3_29_1/tree.lua" part="tree" sha1="9d3240b345572f7041befffbe9951437ae44496c" />
+	<File name="TreeData/Atlas/3_30/images.lua" part="tree" sha1="a69a6c53c2da5720e3b3dc5c4a0789d45f708576" />
+	<File name="TreeData/Atlas/3_30/tree.lua" part="tree" sha1="ab21e8e515ca4f9e0b9f753d9fceb922da9428cb" />
+	<File name="TreeData/Atlas/Images/atlas-background-3-4db9c28ea7.jpg" part="tree" sha1="4db9c28ea7c03108f89785c65bc3b17ef7b64d5e" />
+	<File name="TreeData/Atlas/Images/atlas-background-3-6964a35d3a.webp" part="tree" sha1="6964a35d3a08cf518eef6ec681b39e672e6f969b" />
+	<File name="TreeData/Atlas/Images/atlas-background-3-aa87f5be0d.jpg" part="tree" sha1="aa87f5be0d26b2241e108792cf6d3ac14e953686" />
+	<File name="TreeData/Atlas/Images/atlas-background-3-bc00b47323.jpg" part="tree" sha1="bc00b473232864512cf75fe43998832ce0eac839" />
+	<File name="TreeData/Atlas/Images/atlas-frame-3-9f346bf566.png" part="tree" sha1="9f346bf5665684d56242686cdab17db56332d2ce" />
+	<File name="TreeData/Atlas/Images/atlas-frame-3-479b9fa4e1.png" part="tree" sha1="479b9fa4e1e821905313d42fbc6c1cbd4a672d3b" />
+	<File name="TreeData/Atlas/Images/atlas-frame-3-5636597477.png" part="tree" sha1="5636597477e71d0a6b283c2ad0b9a0b9bb91e4da" />
+	<File name="TreeData/Atlas/Images/atlas-frame-3-e40966e765.webp" part="tree" sha1="e40966e765701defef80780227a49d0d63b3748b" />
+	<File name="TreeData/Atlas/Images/atlas-group-background-3-2aa512bdf5.png" part="tree" sha1="2aa512bdf5288f24cc6704b0af3019e77314ae4c" />
+	<File name="TreeData/Atlas/Images/atlas-group-background-3-48060eae71.png" part="tree" sha1="48060eae71efe805e47cb3b04e7735bfd59d3739" />
+	<File name="TreeData/Atlas/Images/atlas-group-background-3-e86406c901.webp" part="tree" sha1="e86406c901a1ae643daf1d8cf7cdbb292624be72" />
+	<File name="TreeData/Atlas/Images/atlas-groups-3-b4797d0778.png" part="tree" sha1="b4797d077827d8f629da8062a5bcdfa843e4a5d9" />
+	<File name="TreeData/Atlas/Images/atlas-line-3-9fe204d784.png" part="tree" sha1="9fe204d78494c422b27ccc5464461f3f78e68274" />
+	<File name="TreeData/Atlas/Images/atlas-line-3-884b6e9a29.png" part="tree" sha1="884b6e9a29d6eb218033499147de70deaa19ac6b" />
+	<File name="TreeData/Atlas/Images/atlas-line-3-968dafd899.webp" part="tree" sha1="968dafd89919e133b49a434368a595830cb89d28" />
+	<File name="TreeData/Atlas/Images/atlas-mastery-3-0c2765d07c.png" part="tree" sha1="0c2765d07ce16b4366eccb6ead0b83628664274a" />
+	<File name="TreeData/Atlas/Images/atlas-mastery-3-1df24fbbe9.png" part="tree" sha1="1df24fbbe9c4fe6adecf9e3159e5ab495a05eb7a" />
+	<File name="TreeData/Atlas/Images/atlas-mastery-3-8c9aef4143.png" part="tree" sha1="8c9aef4143abf67840b07fad43d875c8f291623c" />
+	<File name="TreeData/Atlas/Images/atlas-mastery-3-9a9271e9fc.png" part="tree" sha1="9a9271e9fcdf73e4601ad429d2006eac8c5b9e1d" />
+	<File name="TreeData/Atlas/Images/atlas-mastery-3-9091e0401a.png" part="tree" sha1="9091e0401af2f2a0d230d474dbdf9b66b7cfdca9" />
+	<File name="TreeData/Atlas/Images/atlas-mastery-3-152312ae5a.webp" part="tree" sha1="152312ae5acfef102ea2d958de939ad6fe55610f" />
+	<File name="TreeData/Atlas/Images/atlas-mastery-3-a2f609797b.png" part="tree" sha1="a2f609797b3905b41ce9e5231b0e8d529e1bfcf2" />
+	<File name="TreeData/Atlas/Images/atlas-mastery-3-bacc0fd492.png" part="tree" sha1="bacc0fd4926cfc49ce67e0e731342a6aeae6dda5" />
+	<File name="TreeData/Atlas/Images/atlas-mastery-3-c6fdfc98fd.png" part="tree" sha1="c6fdfc98fd3d832154626327da2ae03bfdad8c6c" />
+	<File name="TreeData/Atlas/Images/atlas-mastery-3-d41ab976b1.png" part="tree" sha1="d41ab976b1cdc0596e1db98744adbc5d516aefb2" />
+	<File name="TreeData/Atlas/Images/atlas-mastery-3-d878b471ce.png" part="tree" sha1="d878b471ce27e873346b2961664f0280816e8485" />
+	<File name="TreeData/Atlas/Images/atlas-mastery-active-3-5a1391c85c.png" part="tree" sha1="5a1391c85c5e7c68246bb095a9e36a5bf024a23c" />
+	<File name="TreeData/Atlas/Images/atlas-mastery-overlay-4fc864314f.png" part="tree" sha1="4fc864314f46d8c2d56ac59c6c4f4582388f123c" />
+	<File name="TreeData/Atlas/Images/atlas-mastery-overlay-5cd294bd3a.webp" part="tree" sha1="5cd294bd3a6ce52ef238a9420ad003746ccaa9a5" />
+	<File name="TreeData/Atlas/Images/atlas-mastery-overlay-9a8a384620.png" part="tree" sha1="9a8a384620065776220de2216890c5bdb04a08c6" />
+	<File name="TreeData/Atlas/Images/atlas-mastery-overlay-367ee77d4b.png" part="tree" sha1="367ee77d4b92ec2d7c35c4b53c2fd0223b23d9b9" />
+	<File name="TreeData/Atlas/Images/atlas-mastery-overlay-866e34567e.png" part="tree" sha1="866e34567e29f9e977aacbe502ce2920463b2c96" />
+	<File name="TreeData/Atlas/Images/atlas-mastery-overlay-6222d9497e.png" part="tree" sha1="6222d9497eee1897083ab416fde4323c410199c0" />
+	<File name="TreeData/Atlas/Images/atlas-mastery-overlay-7981ce23cc.png" part="tree" sha1="7981ce23cc3109add1dd9153b427ba21c0f34a99" />
+	<File name="TreeData/Atlas/Images/atlas-mastery-overlay-a47a3b9617.png" part="tree" sha1="a47a3b96170edd6658a28a72b8a9e1bbfc091439" />
+	<File name="TreeData/Atlas/Images/atlas-mastery-overlay-b4642fed78.png" part="tree" sha1="b4642fed78a4070bcb63beb49dfcbc84c132480f" />
+	<File name="TreeData/Atlas/Images/atlas-mastery-overlay-d5904fa493.png" part="tree" sha1="d5904fa493e6e6c3c0b0316ec24f5a816f95d4d0" />
+	<File name="TreeData/Atlas/Images/atlas-mastery-overlay-f461cd206d.png" part="tree" sha1="f461cd206dc5042c08fa46d3f7f7f98bcba41dd0" />
+	<File name="TreeData/Atlas/Images/atlas-skills-3-0a8fe9c44a.jpg" part="tree" sha1="0a8fe9c44a13c4530b6b4e970a4295418662581f" />
+	<File name="TreeData/Atlas/Images/atlas-skills-3-1a56da6417.jpg" part="tree" sha1="1a56da641788dadba11226477470906080bb40f2" />
+	<File name="TreeData/Atlas/Images/atlas-skills-3-2ef2c0b8f5.jpg" part="tree" sha1="2ef2c0b8f53998316c4e7a203d444324995cf1b7" />
+	<File name="TreeData/Atlas/Images/atlas-skills-3-8ed905b5c6.jpg" part="tree" sha1="8ed905b5c636cd1b0de088548baf0338a1c7a2c3" />
+	<File name="TreeData/Atlas/Images/atlas-skills-3-9cd301d047.jpg" part="tree" sha1="9cd301d0473a2117823fe5fe326776580f70193a" />
+	<File name="TreeData/Atlas/Images/atlas-skills-3-66ccfd7155.jpg" part="tree" sha1="66ccfd71557ecb311d0d91af31f9d51233a9b7a3" />
+	<File name="TreeData/Atlas/Images/atlas-skills-3-84b5e9b094.webp" part="tree" sha1="84b5e9b094244ed451e2605537fceb69165a17bd" />
+	<File name="TreeData/Atlas/Images/atlas-skills-3-131ce71517.jpg" part="tree" sha1="131ce715172c602e6568a3daab44d7038dd7e202" />
+	<File name="TreeData/Atlas/Images/atlas-skills-3-642e060abe.jpg" part="tree" sha1="642e060abee600a5edfe18b47bdc0aa3aa84eaea" />
+	<File name="TreeData/Atlas/Images/atlas-skills-3-73757fcc8c.jpg" part="tree" sha1="73757fcc8caeed295f176f2c07fa9bba454e1e63" />
+	<File name="TreeData/Atlas/Images/atlas-skills-3-acbb9fd50a.jpg" part="tree" sha1="acbb9fd50a02074c97804a72cbf2240c5d4d74bf" />
+	<File name="TreeData/Atlas/Images/atlas-skills-3-c83e273f66.jpg" part="tree" sha1="c83e273f66cd31fd34194543f50b51f0435e8e3e" />
+	<File name="TreeData/Atlas/Images/atlas-skills-3-e1ff02c2ca.jpg" part="tree" sha1="e1ff02c2cae7e7169ccee193117b4ff9a49844e3" />
+	<File name="TreeData/Atlas/Images/atlas-skills-3-e424bb5679.jpg" part="tree" sha1="e424bb5679bf6e6b9a1f763cead9af2ec140badd" />
+	<File name="TreeData/Atlas/Images/atlas-skills-3-ea16fcdd84.jpg" part="tree" sha1="ea16fcdd8459c5c674bdcc946ae55540cfad8ae4" />
+	<File name="TreeData/Atlas/Images/atlas-skills-3-fb2ffaeeb4.jpg" part="tree" sha1="fb2ffaeeb416a60788ec52bbd763c8b31ddf8db8" />
+	<File name="TreeData/Atlas/Images/atlas-skills-disabled-3-1cde6a8f6f.jpg" part="tree" sha1="1cde6a8f6fcbf86de9393ffe8998372f8f6b0ac7" />
+	<File name="TreeData/Atlas/Images/atlas-skills-disabled-3-2b76bd6c77.jpg" part="tree" sha1="2b76bd6c77e13e3691a46184cf2f855b4ede2e08" />
+	<File name="TreeData/Atlas/Images/atlas-skills-disabled-3-7f91b7f24a.jpg" part="tree" sha1="7f91b7f24afaff3314d8229186a1ce15083dc3b9" />
+	<File name="TreeData/Atlas/Images/atlas-skills-disabled-3-9a58cf55c1.jpg" part="tree" sha1="9a58cf55c10e0e83d57c908a2b71938edf6caac5" />
+	<File name="TreeData/Atlas/Images/atlas-skills-disabled-3-48ec617c5c.jpg" part="tree" sha1="48ec617c5ce4305e033424a42d1dfb5863019f52" />
+	<File name="TreeData/Atlas/Images/atlas-skills-disabled-3-58e228f4be.jpg" part="tree" sha1="58e228f4be2ac2798814257ea3f7525138b27edf" />
+	<File name="TreeData/Atlas/Images/atlas-skills-disabled-3-244c820c7a.jpg" part="tree" sha1="244c820c7a47683e7f0466685e5328b641f453ce" />
+	<File name="TreeData/Atlas/Images/atlas-skills-disabled-3-0761f353c8.jpg" part="tree" sha1="0761f353c83d82cb71cbde29df748ce2de9f5ad3" />
+	<File name="TreeData/Atlas/Images/atlas-skills-disabled-3-7379d12ffe.jpg" part="tree" sha1="7379d12ffee33e9e4ce799b6a404e2c2a6ae2b47" />
+	<File name="TreeData/Atlas/Images/atlas-skills-disabled-3-a4a6b47d36.jpg" part="tree" sha1="a4a6b47d3671a2d369ece749c3c00e0cd33341af" />
+	<File name="TreeData/Atlas/Images/atlas-skills-disabled-3-bcf86f0023.jpg" part="tree" sha1="bcf86f0023f7691940524e97c24c4a16206178aa" />
+	<File name="TreeData/Atlas/Images/atlas-skills-disabled-3-c80a5151d7.jpg" part="tree" sha1="c80a5151d792e32ec35fb36d5ce7725212b5c0ca" />
+	<File name="TreeData/Atlas/Images/atlas-skills-disabled-3-c89e82339f.jpg" part="tree" sha1="c89e82339f8948fe131359b73bdd4d7cd8aacb50" />
+	<File name="TreeData/Atlas/Images/atlas-skills-disabled-3-e4c5a28afd.jpg" part="tree" sha1="e4c5a28afd84cb0ff22ce79c4895333ec32823ec" />
+	<File name="TreeData/Atlas/Images/atlas-skills-disabled-3-e710a077b8.webp" part="tree" sha1="e710a077b898f4b21d6e33e8e4fee061a5685890" />
+	<File name="TreeData/Atlas/Images/atlas-skills-disabled-3-f605b2bfbb.jpg" part="tree" sha1="f605b2bfbb2971d984ffb3e5fa3969165986afb4" />
+	<File name="TreeData/Atlas/Images/AtlasPassiveSkillScreenStart-df743bdd3e.png" part="tree" sha1="df743bdd3eb0c2d6b527db36315ea9e44bc29ef2" />
+	<File name="TreeData/Atlas/Images/Background2-4fa4e138a2.png" part="tree" sha1="4fa4e138a23b05370996fdc5fe03307da5523e22" />
+	<File name="TreeData/Atlas/Images/background-3-1879f7fc11.png" part="tree" sha1="1879f7fc11de729dd3b96592f08f011d386c3b56" />
+	<File name="TreeData/Atlas/Images/background-3-be530e9012.png" part="tree" sha1="be530e9012afe953967420ef2aab06db68fbf341" />
+	<File name="TreeData/Atlas/Images/GroupBackgroundCleansingFire-546ebf613f.png" part="tree" sha1="546ebf613f0b0960edf51ab7b4cbcac4907c3933" />
+	<File name="TreeData/Atlas/Images/GroupBackgroundTangle-b7778175a1.png" part="tree" sha1="b7778175a1e5068f04471ddee74152ecb396ca0e" />
+	<File name="TreeData/Atlas/Images/imgPSFadeCorner-3ea0a73776.png" part="tree" sha1="3ea0a73776e301c2661df5a96129c9522aa24180" />
+	<File name="TreeData/Atlas/Images/imgPSFadeSide-f944019864.png" part="tree" sha1="f944019864423e5774ba18fae961f74bc023f7f7" />
+	<File name="TreeData/Atlas/Images/PSGroupBackground1-ac9eb651d0.png" part="tree" sha1="ac9eb651d06a9dd38f5665efcc48695a119d7cd2" />
+	<File name="TreeData/Atlas/Images/PSGroupBackground1Alt-6011d4d82a.png" part="tree" sha1="6011d4d82adbb26cfd01c0bb8e8d2c270ad26701" />
+	<File name="TreeData/Atlas/Images/PSGroupBackground2-64275b7dc8.png" part="tree" sha1="64275b7dc85ea12b67b6663ee4245b99c6438cec" />
+	<File name="TreeData/Atlas/Images/PSGroupBackground2Alt-cc70464990.png" part="tree" sha1="cc70464990d611fc1f7c802cef7473305ddb5f0d" />
+	<File name="TreeData/Atlas/Images/PSGroupBackground3-ce31e5a87d.png" part="tree" sha1="ce31e5a87d5e1077dbb1eb2bac4446f2b37ddfe8" />
+	<File name="TreeData/Atlas/Images/PSGroupBackground3Alt-0d235177d3.png" part="tree" sha1="0d235177d3cb48434dc47556f9ac43c98920df49" />
+	<File name="TreeData/Atlas/Images/PSPointsFrame-f7fe752e60.png" part="tree" sha1="f7fe752e604bdb0142f3e64cad7c390fd8404cf9" />
 	<File name="TreeData/AzmeriAscendancyFrameLargeAllocated.png" part="tree" sha1="153ee339b837b7c2e570cb1673e8076ff8f34545" />
 	<File name="TreeData/AzmeriAscendancyFrameLargeCanAllocate.png" part="tree" sha1="6b8d8de45ec6fa101efeb0e5b3d9111aa6aa8192" />
 	<File name="TreeData/AzmeriAscendancyFrameLargeNormal.png" part="tree" sha1="9fa77cf0e0080ab1f71503f448b5b6e3d756a51c" />

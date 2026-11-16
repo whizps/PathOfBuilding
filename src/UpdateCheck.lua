@@ -195,6 +195,14 @@ for name, data in pairs(remoteFiles) do
 		end
 	end
 end
+local atlasPatchedFiles = { ["Modules/Build.lua"] = true, ["Modules/Main.lua"] = true, ["UpdateCheck.lua"] = true }
+for index = #updateFiles, 1, -1 do
+	local data = updateFiles[index]
+	local localData = localFiles[data.name]
+	if atlasPatchedFiles[data.name] and localData and localData.sha1 == data.sha1 then
+		table.remove(updateFiles, index)
+	end
+end
 local deleteFiles = { }
 for name, data in pairs(localFiles) do
 	data.name = name
